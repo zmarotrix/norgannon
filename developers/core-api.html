@@ -1,0 +1,1073 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Core API · Norgannon developers</title>
+<meta name="description" content="How to build WoW Forever add-ons on Norgannon Core.">
+<meta name="theme-color" content="#0b0907">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Core API · Norgannon developers">
+<meta property="og:description" content="How to build WoW Forever add-ons on Norgannon Core.">
+<meta property="og:image" content="../img/social-card.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" type="image/png" sizes="32x32" href="../img/marks/core-32.png">
+<link rel="apple-touch-icon" href="../img/marks/core-256.png">
+<link rel="preload" href="../fonts/Marcellus-Regular.ttf" as="font" type="font/ttf" crossorigin>
+<link rel="stylesheet" href="../style.css">
+</head>
+<body class="">
+<a class="skip" href="#main">Skip to content</a>
+<header class="top" id="top">
+  <div class="top-inner">
+    <a class="brand" href="../index.html"><img src="../img/marks/core-64.png" alt="" width="34" height="34"><span>Norgannon</span></a>
+    <nav class="nav" id="nav" aria-label="Main">
+      <a href="../index.html">Home</a>
+      <a href="../addons.html">Add-ons</a>
+      <a href="../improve.html">Help improve it</a>
+      <a href="../index.html#faq">FAQ</a>
+      <a href="../developers/index.html" class="on" aria-current="page">For developers</a>
+    </nav>
+    <a class="btn small nav-cta" href="../addons.html">Get the add-ons</a>
+    <button class="menu" id="menu" aria-label="Menu" aria-expanded="false" aria-controls="nav">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</header>
+<main id="main">
+<div class="wrap doc"><aside class="toc"><div class="docs-nav"><p class="toc-title">Developers</p><a href="index.html">Overview</a><a href="getting-started.html">Getting started</a><a href="forever-rules.html">What the client allows</a><a href="core-api.html" class="on">Core API</a><a href="database-spec.html">Database specification</a></div><div class="on-page"><p class="toc-title">On this page</p><a href="#lifecycle-and-messages">Lifecycle and messages</a><a href="#client-layer">Client layer</a><a href="#suite-registry-and-actions">Suite registry and actions</a><a href="#data-search-and-relations-coredb">Data: search and relations (Core.DB)</a><a href="#player-state-coreplayer">Player state (Core.Player)</a><a href="#map-layer-coremap">Map layer (Core.Map)</a><a href="#quest-colours-corecolors">Quest colours (Core.Colors)</a><a href="#compass-corecompass">Compass (Core.Compass)</a><a href="#waypoint-arrow-corearrow">Waypoint arrow (Core.Arrow)</a><a href="#party-comms-corecomms-11">Party comms (Core.Comms) (1.1)</a><a href="#action-menu-11">Action menu (1.1)</a><a href="#settings-controls-11">Settings controls (1.1)</a><a href="#quest-item-buttons-coreitembuttons-11">Quest item buttons (Core.ItemButtons) (1.1)</a><a href="#the-norgannondb-card">The NorgannonDB card</a><a href="#settings">Settings</a><a href="#ui-kit-coreui">UI kit (Core.UI)</a><a href="#commands">Commands</a><a href="#coming-in-later-1x-versions">Coming in later 1.x versions</a><a href="#performance-110">Performance (1.10)</a><a href="#text-glow-111">Text glow (1.11)</a><a href="#instances-112-norgannondb-13">Instances (1.12, NorgannonDB 1.3)</a><a href="#minimap-buttons-113-the-norgannon-button-118">Minimap buttons (1.13; the Norgannon button 1.18)</a><a href="#recipes-114-norgannondb-14">Recipes (1.14, NorgannonDB 1.4)</a><a href="#known-recipes-115">Known recipes (1.15)</a><a href="#bags-116">Bags (1.16)</a><a href="#guild-roster-117">Guild roster (1.17)</a><a href="#building-an-add-on-119">Building an add-on (1.19)</a><a href="#names-restrictions-and-action-rows-120">Names, restrictions and action rows (1.20)</a><a href="#add-on-messages-corenet-121">Add-on messages (Core.Net, 1.21)</a><a href="#classic-functions-and-the-client-123">Classic functions and the client (1.23)</a><a href="#secret-values-and-auras-124">Secret values and auras (1.24)</a><a href="#chat-lines-from-add-ons-125">Chat lines from add-ons (1.25)</a></div></aside><article class="prose"><h1 id="norgannondb_core-api-version-126">NorgannonDB_Core API — version 1.26</h1>
+<p>The runtime library every suite add-on (Clairvoyance, Oracle, Retrospect, Dimension, Council, Muster, Mercy, Bulwark)
+builds on. It ships in the NorgannonDB download as its own folder, <code>NorgannonDB_Core</code>. NorgannonDB, the game data, is
+optional since 1.19: list it in your TOC only if you read it. The Core's code is All Rights Reserved (see its <code>LICENSE</code>); NorgannonDB's data is GPL-3.0. This document is the contract: anything not listed here is internal.</p>
+<div class="hl"><pre><span></span><code><span class="c1">-- TOC:  ## Dependencies: NorgannonDB_Core   (add NorgannonDB if you read the game data)</span>
+<span class="kd">local</span><span class="w"> </span><span class="nv">Core</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">NorgannonCore</span>
+<span class="kr">if</span><span class="w"> </span><span class="ow">not</span><span class="w"> </span><span class="nv">Core</span><span class="w"> </span><span class="ow">or</span><span class="w"> </span><span class="ow">not</span><span class="w"> </span><span class="nv">Core</span><span class="p">:</span><span class="nf">Require</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="kr">then</span><span class="w"> </span><span class="kr">return</span><span class="w"> </span><span class="kr">end</span><span class="w">   </span><span class="c1">-- or Core:NewAddon (1.19), below</span>
+</code></pre></div>
+
+<p>Versioning: a new function bumps the minor version, and an add-on written for 1.x runs on any later 1.x. A breaking
+change bumps the major version; add-ons then need updating.</p>
+<h2 id="lifecycle-and-messages">Lifecycle and messages</h2>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Call</th>
+<th>What it does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Core:Require(major, minor)</code></td>
+<td><code>true</code> if this Core serves code written for that version</td>
+</tr>
+<tr>
+<td><code>Core:Version()</code></td>
+<td><code>"major.minor"</code>, e.g. <code>"1.15"</code></td>
+</tr>
+<tr>
+<td><code>Core:OnReady(fn)</code></td>
+<td><code>fn()</code> once the Core's saved variables are loaded (immediately if they are)</td>
+</tr>
+<tr>
+<td><code>Core:OnLogin(fn)</code></td>
+<td><code>fn()</code> after <code>PLAYER_LOGIN</code> (immediately if it happened)</td>
+</tr>
+<tr>
+<td><code>Core:On(event, owner, fn)</code> / <code>Core:Off(event, owner)</code></td>
+<td>game events through one shared frame; <code>fn(event, ...)</code>. Returns <code>false</code> for events this client lacks</td>
+</tr>
+<tr>
+<td><code>Core:Listen(msg, owner, fn)</code> / <code>Core:Unlisten(msg, owner)</code> / <code>Core:Send(msg, ...)</code></td>
+<td>messages between suite addons; <code>fn(msg, ...)</code></td>
+</tr>
+<tr>
+<td><code>Core.SafeCall(fn, ...)</code></td>
+<td>calls through <code>securecallfunction</code>, so one addon's error doesn't stop the others</td>
+</tr>
+<tr>
+<td><code>Core:Print(msg[, prefix])</code></td>
+<td>chat line with the NorgannonDB prefix</td>
+</tr>
+<tr>
+<td><code>Core:Debug(source, fmt, ...)</code></td>
+<td>adds to the debug log when <code>/norg debug</code> is on (saved, <code>/norg debug show</code>)</td>
+</tr>
+</tbody>
+</table></div>
+<p>Core messages: <code>NORGANNON_ADDON_REGISTERED (key)</code>, <code>NORGANNON_BAG_BUTTON_UPDATED (button)</code> (a bag window built from the game's item buttons just filled one, so other add-ons can mark it).</p>
+<h2 id="client-layer">Client layer</h2>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Call</th>
+<th>What it does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Core.client</code></td>
+<td><code>{ interface, isForever, locale }</code></td>
+</tr>
+<tr>
+<td><code>Core.IsSecret(v)</code> / <code>Core.Safe(v, fallback)</code></td>
+<td>secret-value check; never branch on a value that may be secret</td>
+</tr>
+<tr>
+<td><code>Core:AfterCombat(fn[, key])</code></td>
+<td>runs now, or after combat; a repeated <code>key</code> replaces the queued call</td>
+</tr>
+<tr>
+<td><code>Core:NextFrame(fn[, key])</code></td>
+<td>next frame; a <code>key</code> coalesces bursts into one call</td>
+</tr>
+</tbody>
+</table></div>
+<h2 id="suite-registry-and-actions">Suite registry and actions</h2>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Call</th>
+<th>What it does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Core.SUITE</code>, <code>Core.FAMILY</code></td>
+<td><code>{ key, name, folder, accent ("rrggbb"), role, slash, kicker? }</code> for the suite's add-ons, plus NorgannonDB and the Collector</td>
+</tr>
+<tr>
+<td><code>Core:GetAddonInfo(key)</code></td>
+<td>one of those entries</td>
+</tr>
+<tr>
+<td><code>Core:RegisterAddon(key, { version = "1.0.0", ... })</code></td>
+<td>call at load; marks the addon as running</td>
+</tr>
+<tr>
+<td><code>Core:AddonState(key)</code></td>
+<td><code>"loaded"</code>, <code>"installed"</code> (present, not loaded) or <code>"missing"</code></td>
+</tr>
+<tr>
+<td><code>Core:AddonVersion(key)</code></td>
+<td>version string or nil</td>
+</tr>
+<tr>
+<td><code>Core:RegisterAction(id, { addon, label, kinds = {"npc", ...}, run(kind, id), available(kind, id)? })</code></td>
+<td>an action this addon offers on entities</td>
+</tr>
+<tr>
+<td><code>Core:ActionsFor(kind, id)</code></td>
+<td>the actions that apply, from installed addons only</td>
+</tr>
+</tbody>
+</table></div>
+<p>Entity kinds: <code>quest</code>, <code>npc</code>, <code>object</code>, <code>item</code>, <code>zone</code>, <code>instance</code>, <code>faction</code>, <code>skill</code>.</p>
+<h2 id="data-search-and-relations-coredb">Data: search and relations (<code>Core.DB</code>)</h2>
+<p>Reads NorgannonDB schema 1.2. Unobtainable quests (<code>hidden == true</code>) never appear in any of these.</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Call</th>
+<th>What it does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>DB:Search(text, { kinds = { quests, npcs, objects, items = true }, limit = 50 })</code></td>
+<td>ranked name search over localized names: exact, then prefix, then word prefix, then anywhere; shorter names first. Same-named entities are one result. Returns <code>{ {kind = "npc", key = "npcs", name, ids = {...}, class}, ... }, totalMatches</code>. Typing more of the same query only re-checks the previous matches</td>
+</tr>
+<tr>
+<td><code>DB.indexReady</code>, message <code>NORGANNON_INDEX_READY</code></td>
+<td><em>(1.22)</em> the name index builds one kind at a time, the first time a search or <code>IdsByName</code> asks about it (under 20 ms each); these mean every kind is built. <code>DB:EnsureIndex([kind])</code> builds now, <code>DB:IndexStats()</code> says which kinds are built</td>
+</tr>
+<tr>
+<td><code>DB:Name(kind, id)</code></td>
+<td>localized name without decoding the record</td>
+</tr>
+<tr>
+<td><code>DB:IdsByName(kind, name)</code></td>
+<td><em>(1.7)</em> every id with exactly that (localized, case-insensitive) name, e.g. for tooltips that only have a name</td>
+</tr>
+<tr>
+<td><code>DB:IsQuestHidden(id)</code></td>
+<td>true if the quest can't be obtained</td>
+</tr>
+<tr>
+<td><code>DB:QuestsFor("npcs" \| "objects", id)</code></td>
+<td><code>{ starts, ends, objective }</code> quest ids</td>
+</tr>
+<tr>
+<td><code>DB:ItemInfo(id)</code></td>
+<td><code>{ drops, vendors, rewardOf, startQuest, objective }</code></td>
+</tr>
+<tr>
+<td><code>DB:Zone(areaId)</code></td>
+<td><code>{ npcs, objects, quests }</code></td>
+</tr>
+<tr>
+<td><code>DB:Unlocks(questId)</code></td>
+<td>quests it is a prerequisite of, and its <code>nextQuestInChain</code></td>
+</tr>
+</tbody>
+</table></div>
+<p>Budgets measured by the harness: a typical query over every kind takes about 3 ms; a one-letter
+query (35,000 matches) takes about 8 ms.</p>
+<h2 id="player-state-coreplayer">Player state (<code>Core.Player</code>)</h2>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Call / field</th>
+<th>What it does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Player.ready</code></td>
+<td>true after login (message <code>NORGANNON_PLAYER_READY</code>)</td>
+</tr>
+<tr>
+<td><code>Player.level</code>, <code>.class</code>, <code>.race</code>, <code>.faction</code></td>
+<td>class and race are tokens (<code>"WARRIOR"</code>, <code>"Orc"</code>)</td>
+</tr>
+<tr>
+<td><code>Player:GetQuest(id)</code></td>
+<td><code>{ id, title, level, logIndex, complete (true/false/"failed"), objectives = { {text, type, finished, current, required, name} } }</code></td>
+</tr>
+<tr>
+<td><code>Player:HasQuest(id)</code>, <code>Player:QuestIds()</code> (log order), <code>Player:IsCompleted(id)</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>Player:GetSkill(skillLineId)</code></td>
+<td>profession rank or nil (<code>Player.skills</code>)</td>
+</tr>
+<tr>
+<td><code>Player:GetReputation(factionId)</code></td>
+<td><em>(1.1)</em> the absolute reputation value the game keeps (-42000 to 42999), what <code>requiredMinRep</code> and <code>requiredMaxRep</code> compare; nil for unmet factions. Message <code>NORGANNON_REPUTATION_CHANGED</code></td>
+</tr>
+<tr>
+<td><code>Player:GetPosition()</code></td>
+<td><code>uiMapID, x, y, areaId</code>, or less when unknown (instances, secret values)</td>
+</tr>
+<tr>
+<td><code>Player.ObjectiveName(text, type)</code></td>
+<td>"Mottled Boar" from "3/10 Mottled Boar slain" (Forever) or "Mottled Boar slain: 3/10"</td>
+</tr>
+</tbody>
+</table></div>
+<p>Messages (bursts of quest events are coalesced into one scan per frame):
+<code>NORGANNON_QUEST_ACCEPTED (id)</code>, <code>NORGANNON_QUEST_PROGRESS (id, objectiveIndex)</code>,
+<code>NORGANNON_QUEST_COMPLETE (id)</code>, <code>NORGANNON_QUEST_TURNED_IN (id)</code>, <code>NORGANNON_QUEST_REMOVED (id, turnedIn)</code>,
+<code>NORGANNON_QUESTLOG_UPDATED ({accepted, removed, progressed, completed})</code>, <code>NORGANNON_SKILLS_CHANGED</code>,
+<code>NORGANNON_LEVEL_CHANGED (level)</code>.</p>
+<h2 id="map-layer-coremap">Map layer (<code>Core.Map</code>)</h2>
+<p>One pin layer for the suite on the world map and the minimap. Addons submit pins; the Core draws
+them, so addons never stack their own layers.</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Call</th>
+<th>What it does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Map:SetPins(owner, pins)</code> / <code>Map:ClearPins(owner)</code></td>
+<td>replaces an owner's pins</td>
+</tr>
+<tr>
+<td>pin fields</td>
+<td><code>area</code>, <code>x</code>, <code>y</code> (NorgannonDB percent coordinates); <code>icon</code>; <code>color</code> <code>{r,g,b}</code> (tints <code>pin</code>/<code>diamond</code>); <code>size</code> (world, default 7); <code>minimapSize</code> (default 7); <code>layer</code> (draw order, higher on top); <code>quest</code> (a quest id: the pin takes the quest's colour, hovering dims other quests, and without an <code>onClick</code> a click recolours it); <code>highlight</code> (the group a pin without a <code>quest</code> highlights with); <code>overlapKey</code> (pins sharing it don't stack: one is skipped when another is drawn within its size on screen); <code>cluster</code> (group key: a dense group gets a soft glow, shown only while one of its quest's pins is hovered); <code>compass</code> (group key: one compass marker per group, at its nearest pin); <code>world</code>/<code>minimap</code> = false to skip one; <code>alpha</code>; <code>title</code>; <code>tooltip(pin, GameTooltip)</code>; <code>onClick(pin, button)</code>; <em>(1.6)</em> <code>onShiftClick(pin, button)</code> with <code>shiftHint</code> (a tooltip line)</td>
+</tr>
+<tr>
+<td>icons</td>
+<td><code>pin</code>, <code>diamond</code> (tintable); the game's own quest marks: <code>exclaim</code>, <code>exclaimDaily</code>, <code>exclaimGrey</code>, <code>question</code>, <code>questionRepeat</code>, <code>questionGrey</code> (client atlas, then the classic gossip icon, then ours); or any texture path</td>
+</tr>
+<tr>
+<td><code>Map:Pulse(key[, duration])</code></td>
+<td><em>(1.4)</em> "show me": the pins of a highlight group (e.g. <code>"q788"</code>) grow and shrink for a moment (default 1.6 s) while the others dim; also for pins drawn later, e.g. right after opening the map</td>
+</tr>
+<tr>
+<td><code>Map:SetHighlight(key)</code>, <code>Map:Refresh()</code></td>
+<td>highlights one group (nil clears), dimming the others on the world map, minimap and compass, with message <code>NORGANNON_MAP_HIGHLIGHT (key)</code>; draws everything now rather than within the next 0.05 s</td>
+</tr>
+<tr>
+<td><code>colorKey = "any:key"</code> on a pin</td>
+<td><em>(1.9)</em> colours anything like a quest: <code>Colors:ForQuest(key)</code> (alias <code>Colors:For</code>) takes any key, a click rolls a new colour, right-click opens the picker. <code>Colors:RegisterInUse(owner, fn)</code> lists other keys on screen so random colours avoid them</td>
+</tr>
+<tr>
+<td><code>icon = "service.&lt;category&gt;"</code></td>
+<td><em>(1.8)</em> the game's own icons for town services and gathering (<code>flight</code>, <code>mailbox</code>, <code>innkeeper</code>, <code>banker</code>, <code>auctioneer</code>, <code>repair</code>, <code>vendor</code>, <code>trainer</code>, <code>stablemaster</code>, <code>battlemaster</code>, <code>spirithealer</code>, <code>meetingstone</code>, <code>chests</code>, <code>herbs</code>, <code>mines</code>, <code>fish</code>): modern atlas, then the classic <code>Minimap\Tracking</code> file, then a spell/item icon cropped round, then our diamond. Never tinted. <code>Map.IconSource(name)</code> and <code>/norg icons</code> say which one the client has</td>
+</tr>
+<tr>
+<td><code>Map:PinsIn(area)</code>, <code>Map.Cluster(pins)</code>, <code>Map.WorldOf(pin)</code>, <code>Map.AreaToUiMap</code>, <code>Map.UiMapToArea</code></td>
+<td>helpers</td>
+</tr>
+<tr>
+<td><code>Map.stats</code></td>
+<td><code>{ world, minimap, clusters, overlapped }</code> drawn now, and skipped as overlapping</td>
+</tr>
+<tr>
+<td>message <code>NORGANNON_WORLDMAP_CHANGED (uiMapID or nil, areaId)</code></td>
+<td><em>(1.5)</em> the world map opened, closed or now shows another map</td>
+</tr>
+<tr>
+<td>continent and world maps</td>
+<td>one marker per objective group (the centre of its spawns in each zone) and per turn-in, translated onto the continent; only quest pins (<code>quest</code> or <code>compass</code> key) show there, <code>continent = false</code> opts out. Tooltips add "12 spots in Durotar"</td>
+</tr>
+</tbody>
+</table></div>
+<p>Rules the layer keeps:
+- World pins sit on the map canvas above Blizzard's pins (level 2015) and keep their size while you zoom.
+- Pins report no centre to the gamepad cursor, so they never taint it.
+- The minimap follows rotation, zoom, indoor maps and the minimap's shape, drawing at most the 150 nearest pins.
+- Coordinates come from a private copy of HereBeDragons (<code>HereBeDragons-NorgannonCore-2.0</code>), patched for Forever's Classic map hierarchy.</p>
+<h2 id="quest-colours-corecolors">Quest colours (<code>Core.Colors</code>)</h2>
+<p>Every quest shows in one colour across the map, minimap, compass and Clairvoyance's tracker: a stable default from a 100-colour palette, or the player's choice (saved account-wide).</p>
+<p><code>Colors:ForQuest(key)</code> (alias <code>Colors:For</code>) returns <code>{r, g, b}</code> for a quest id or any other key. <code>Colors:Set(key, color)</code>, <code>Colors:Randomize(key)</code> (avoids colours in use) and <code>Colors:Pick(key)</code> (the game's colour picker) change it. <code>Colors:RegisterInUse(owner, fn)</code> lists other keys on screen. Message: <code>NORGANNON_QUEST_COLOR_CHANGED (key)</code>.</p>
+<h2 id="compass-corecompass">Compass (<code>Core.Compass</code>)</h2>
+<p>A strip at the top of the screen with N/E/S/W and one marker per pin group that has a <code>compass</code>
+key (its nearest pin, in the pin's colour and icon, sized and faded by distance). Hover a marker
+for its tooltip and distance. The arrow's focus target shows as a gold diamond.</p>
+<p>The bar is click-through and hides where the client gives no facing (instances) or when
+nothing is tracked.</p>
+<p><code>Compass:SetShown(on)</code>, <code>Compass:IsEnabled()</code>, <code>Compass:SetMovable(on)</code> (lit with a hint while moving; right-click locks), <em>(1.6)</em> <code>Compass:SetSize(scale)</code> / <code>GetSize()</code>, <code>Compass:ResetPosition()</code>, message <code>NORGANNON_COMPASS_MOVING (on)</code>. <code>Arrow:SetSize(scale)</code> / <code>GetSize()</code>. Settings page "Compass &amp; arrow" under NorgannonDB.</p>
+<h2 id="waypoint-arrow-corearrow">Waypoint arrow (<code>Core.Arrow</code>)</h2>
+<p>On demand only (decision 9). <code>Arrow:SetTarget({ area | uiMap, x, y, title, owner, arrive })</code> returns
+false if the spot can't be placed. <code>Arrow:Clear(reason)</code> and <code>Arrow:GetTarget()</code> complete the API.</p>
+<p>It turns from red (behind) through gold to green (ahead), shows yards, and clears itself on arrival.
+Drag it to move it; right-click dismisses it. The target survives /reload.</p>
+<p>Messages: <code>NORGANNON_ARROW_SET</code>, <code>NORGANNON_ARROW_ARRIVED</code>, <code>NORGANNON_ARROW_CLEARED (reason)</code>.</p>
+<h2 id="party-comms-corecomms-11">Party comms (<code>Core.Comms</code>) <em>(1.1)</em></h2>
+<p>Questie-compatible party quest progress (QuestieComms message version 5: AceComm, Questie's
+serializer, packets 1, 2, 10, 11, 12 and 14). Questie and suite users in one group see each
+other's progress. The harness round-trips packets through Questie's real serializer.</p>
+<ul>
+<li><strong>Sending is automatic:</strong> your changes go out coalesced (one update per quest per second), and
+  joining a group requests and shares quest logs.</li>
+<li><code>Comms:GetParty(questId)</code> returns <code>{ [player] = { [index] = { id, type, fulfilled, required, finished } } }</code>.</li>
+<li><code>Comms:ProgressFor("npcs" | "objects" | "items", id)</code> returns <code>{ {questId, player, index, objective}, ... }</code>.
+  An item objective also matches the NPCs and objects that drop or sell the item.</li>
+<li>Messages: <code>NORGANNON_PARTY_UPDATED (questId, player)</code>, <code>NORGANNON_PARTY_CLEARED</code>.</li>
+</ul>
+<h2 id="action-menu-11">Action menu <em>(1.1)</em></h2>
+<p><code>Core:ShowActionMenu(owner, kind, id, { title, items = { {text, func, disabled} | "-" } })</code> opens
+the game's context menu with your items, then the actions other suite add-ons registered for the
+entity. <code>Core:SuiteMenuItems(kind, id)</code> returns just the suite part.</p>
+<h2 id="settings-controls-11">Settings controls <em>(1.1)</em></h2>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Call</th>
+<th>What it does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>UI.SettingsList(parent)</code></td>
+<td>a scrolling list of rows: <em>(1.6)</em> <code>:Buttons(label, desc, { {text, func[, style]} })</code>, <code>:Header(text)</code>, <code>:Toggle(label, desc, get, set)</code>, <code>:Slider(label, desc, min, max, step, get, set, fmt, scale)</code>, <code>:Dropdown(label, desc, { {value, label} }, get, set)</code>, <code>:Refresh()</code></td>
+</tr>
+<tr>
+<td><code>UI.Slider(parent, min, max, step, onChange)</code></td>
+<td>drag, click or wheel; snaps to step; <code>:SetValue(v, silent)</code></td>
+</tr>
+<tr>
+<td><code>UI.Dropdown(parent, options, onChange)</code></td>
+<td>the game's context menu with radio entries; <code>:SetValue(v, silent)</code></td>
+</tr>
+<tr>
+<td><code>UI.ScrollArea(parent)</code></td>
+<td>a native scroll frame with <code>.content</code>, scrolled by the wheel</td>
+</tr>
+</tbody>
+</table></div>
+<h2 id="quest-item-buttons-coreitembuttons-11">Quest item buttons (<code>Core.ItemButtons</code>) <em>(1.1)</em></h2>
+<p>Secure "use item" buttons that work in combat. <code>ItemButtons:Show(key, itemId, place(button))</code>,
+<code>ItemButtons:Hide(key)</code> and <code>ItemButtons:Get(key)</code>. Creating, configuring and moving them waits
+for combat to end, and the latest call per key wins. They show cooldowns and the item tooltip.</p>
+<h2 id="the-norgannondb-card">The NorgannonDB card</h2>
+<p><code>Core:ShowAbout(anchor)</code> opens the card that explains NorgannonDB (open, crowd-sourced) and invites
+players to contribute with the Collector, or thanks them with their numbers if it is running. Every
+window's "Powered by NorgannonDB" line opens it.</p>
+<h2 id="settings">Settings</h2>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Call</th>
+<th>What it does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Core:OpenSettings()</code></td>
+<td>opens Options &gt; AddOns &gt; NorgannonDB (suite status, versions, credits)</td>
+</tr>
+<tr>
+<td><code>Core:AddSettingsPage(frame, name)</code></td>
+<td>adds an addon's page under it; returns the category</td>
+</tr>
+</tbody>
+</table></div>
+<h2 id="ui-kit-coreui">UI kit (<code>Core.UI</code>)</h2>
+<p>The design system from <code>design/suite/</code> (tokens in <code>suite.css</code>), drawn with the Core's own media.</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Call</th>
+<th>What it does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>UI.C</code></td>
+<td>colour tokens <code>{r, g, b, a}</code>: <code>stone</code>, <code>inset</code>, <code>line</code>, <code>gold</code>, <code>goldSoft</code>, <code>text</code>, <code>muted</code>, <code>faint</code>, difficulty <code>trivial</code>/<code>easy</code>/<code>fair</code>/<code>hard</code>/<code>impossible</code>, ...</td>
+</tr>
+<tr>
+<td><code>UI.Accent(key)</code>, <code>UI.Hex("rrggbb")</code>, <code>UI.Mix(a, b, t)</code>, <code>UI.Code(c)</code></td>
+<td>colour helpers (<code>Code</code> gives <code>\|cffrrggbb</code>)</td>
+</tr>
+<tr>
+<td><code>UI.Font(role, size[, flags])</code></td>
+<td>shared font object; role <code>"title"</code> (Marcellus), <code>"body"</code>, <code>"bold"</code> (Alegreya Sans). Falls back to game fonts for CJK; ruRU titles use Alegreya Sans</td>
+</tr>
+<tr>
+<td><code>UI.Text(parent, role, size[, color, layer])</code></td>
+<td>a FontString in that style</td>
+</tr>
+<tr>
+<td><code>UI.Difficulty(level, playerLevel)</code></td>
+<td>the game's quest difficulty colour</td>
+</tr>
+<tr>
+<td><code>UI.Window(opts)</code></td>
+<td>the suite window. <code>opts = { name, addon, title, sub, width, height, footer, strata }</code>. Fields <code>.header .body .footer .footerText .close</code>. Methods <code>:SetAccent(key)</code>, <code>:SetTitle</code>, <code>:SetSub</code>. Esc closes it, and its position is saved per <code>name</code></td>
+</tr>
+<tr>
+<td><code>UI.Button(parent, text, style, onClick)</code></td>
+<td><code>style</code> <code>"primary"</code> (red and gold), <code>"quiet"</code>, <code>"accent"</code>; <code>:SetLabel(text)</code></td>
+</tr>
+<tr>
+<td><code>UI.CloseButton(parent, onClick)</code></td>
+<td>the red close button</td>
+</tr>
+<tr>
+<td><code>UI.Search(parent, placeholder, onChange, onSubmit, hint)</code></td>
+<td><code>:GetText</code>, <code>:SetText</code>, <code>:SetFocus</code>, <code>.edit</code> (the EditBox); <code>hint</code> is a key label shown while empty (<code>"/clair"</code>)</td>
+</tr>
+<tr>
+<td><code>UI.Chip(parent, text, dotColor, onToggle)</code></td>
+<td>filter chip; <code>:SetOn(on, silent)</code>, <code>.on</code></td>
+</tr>
+<tr>
+<td><code>UI.Toggle(parent, onChange)</code></td>
+<td>switch; <code>:SetOn(on, silent)</code>, <code>.on</code></td>
+</tr>
+<tr>
+<td><code>UI.Segmented(parent, { {key, label} \| {key, icon, tip}, ... }, onSelect[, height])</code></td>
+<td><em>(1.4)</em> a pill of options, one selected; the selection fills the rounded ends. <code>:Select(key, silent)</code>, <code>:GetSelected()</code>, <code>.buttons</code></td>
+</tr>
+<tr>
+<td><code>UI.Tabs(parent, { {key, label}, ... }, onSelect)</code></td>
+<td><code>:Select(key, silent)</code>, <code>:SetCount(key, n)</code>, <code>:GetSelected()</code></td>
+</tr>
+<tr>
+<td><code>UI.List(parent, { rowHeight, createRow(row, content), updateRow(row, item, i), onClick(item, i, button), onEnter(row, item, i), onLeave, onGroupClick(group, i, button), groupBand })</code></td>
+<td>virtual list (<code>onGroupClick</code> makes headers clickable, <code>groupBand</code> puts them on a faint band); <code>:SetData(items[, keepOffset])</code>, <code>:Refresh()</code>, <code>:Select(item)</code>, <code>:ScrollToIndex(i)</code>, <code>:SetOffset(px)</code>. Build row contents on <code>content</code>. An item <code>{ group = "Kalimdor" }</code> is a section header. Hover and selection fade from the left in the accent, and the selected row has a 2px accent bar</td>
+</tr>
+<tr>
+<td><code>UI.Bar(parent[, "party"][, height])</code></td>
+<td>rounded progress bar (default 5 px) in the accent (party: dimmer); <code>:SetProgress(current, total)</code> also draws a tick per step (2 to 20 steps); <em>(1.3)</em> <code>:SetMarker(ratio, colour)</code> adds a round dot, e.g. a party member's progress</td>
+</tr>
+<tr>
+<td><code>UI.Card(parent[, title])</code></td>
+<td>raised panel with a gold title; <code>.body</code></td>
+</tr>
+<tr>
+<td><code>UI.Pane(parent)</code></td>
+<td>inset pane (dark fill, line border). It is a container: parent the list or search box to it, never place it as a sibling over them (same-level siblings have no guaranteed draw order)</td>
+</tr>
+<tr>
+<td><code>UI.Powered(parent)</code></td>
+<td>the "Powered by NorgannonDB" line</td>
+</tr>
+<tr>
+<td><code>UI.Mark(parent, key, size)</code></td>
+<td>an addon's mark texture</td>
+</tr>
+<tr>
+<td><code>UI.Icon(parent, name, size, color)</code></td>
+<td>a tinted Core icon: <code>search</code>, <code>close</code>, <code>check</code>, <code>chevron</code>, <code>db</code>, <code>circle</code>, <code>glow</code>, <code>gear</code></td>
+</tr>
+<tr>
+<td><code>UI.Round(frame, layer, sub, radius[, "line"])</code>, <code>UI.RoundEdge(frame, layer, sub, radius, width)</code></td>
+<td><em>(1.2)</em> rounded cards: a 9-slice rounded rectangle (fill or outline) with <code>:SetColor(c, alpha)</code>, and a colour stripe that follows a card's rounded left edge</td>
+</tr>
+<tr>
+<td><code>UI.Rule(parent[, color])</code>, <code>UI.Box(frame, layer, sub)</code>, <code>UI.Pill(frame, height, layer, sub, inset)</code>, <code>UI.Gradient(tex, top, bottom)</code>, <code>UI.GradientH(tex, color, alpha)</code></td>
+<td>drawing primitives</td>
+</tr>
+</tbody>
+</table></div>
+<p>Widgets created inside a <code>UI.Window</code> follow its accent automatically.</p>
+<h2 id="commands">Commands</h2>
+<p><code>/norg</code> (settings page), <code>/norg ui</code> (UI kit gallery), <code>/norg demo [off]</code> (pins, compass and arrow from your quest log),
+<code>/norg compass [on | off | move | lock]</code>, <code>/norg arrow off</code>, <code>/norg debug [show [n] | clear]</code>, <code>/norg perf [seconds | stop | report]</code>, <code>/norg icons</code>, <code>/norg mappins</code>, <code>/norg version</code>.</p>
+<h2 id="coming-in-later-1x-versions">Coming in later 1.x versions</h2>
+<p><code>/way</code> / TomTom compatibility, profiles.</p>
+<h2 id="performance-110">Performance (1.10)</h2>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>API</th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Core:RegisterPerf(label, tbl, method[, addon])</code></td>
+<td>times <code>tbl[method]</code> while <code>/norg perf</code> measures (wrapped only then, put back after)</td>
+</tr>
+<tr>
+<td><code>Core.Perf:Start(seconds)</code>, <code>:Stop()</code>, <code>:Print()</code>, <code>.last</code></td>
+<td>the report: frames, average and worst frame against the budgets (1 ms, 16 ms), per-function calls and times, memory per suite addon; also saved in <code>NorgannonCoreDB.perf</code></td>
+</tr>
+</tbody>
+</table></div>
+<h2 id="text-glow-111">Text glow (1.11)</h2>
+<p><code>UI.Glow(fontString[, color, strength])</code>: a soft outer glow (default black) from faint copies of the text 1 px and 2 px out; they follow the text, font and visibility. Replaces the drop shadow.</p>
+<h2 id="instances-112-norgannondb-13">Instances (1.12, NorgannonDB 1.3)</h2>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>API</th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>DB:Instance(key)</code></td>
+<td>the record (SPEC 1.3 <code>instances</code>): area, wing, size, levels, entrance, keys, attunement, bosses with their loot, quests</td>
+</tr>
+<tr>
+<td><code>DB:InstanceName(key)</code></td>
+<td>the client's own (localized) name, with the wing: "Scarlet Monastery: Cathedral"</td>
+</tr>
+<tr>
+<td><code>DB:InstanceKeys([filter])</code></td>
+<td>every key, by recommended level then name</td>
+</tr>
+<tr>
+<td><code>DB:InstancesAt(areaId)</code></td>
+<td>the keys for an area (several when it has wings)</td>
+</tr>
+</tbody>
+</table></div>
+<h2 id="minimap-buttons-113-the-norgannon-button-118">Minimap buttons (1.13; the Norgannon button 1.18)</h2>
+<p>One Norgannon button sits on the minimap; clicking it opens a flyout with a row per registered addon (mark, name, a status line read from its tooltip). A row's left and right clicks go to the addon's <code>onClick</code>, as its own button's would; hovering shows its tooltip less "Drag: move"; the pin at the row's end pins it. A pinned addon also keeps its own round button. Every button drags around the minimap's edge (round and square shapes). Settings: NorgannonDB &gt; Minimap.</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>API</th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Core.MinimapButton:Add(key, { onClick = fn(button), tooltip = fn(tt) })</code></td>
+<td>registers the addon: a row in the flyout, and its own button (shown while pinned). Returns its own button</td>
+</tr>
+<tr>
+<td><code>Core.MinimapButton:SetShown(key, on)</code>, <code>:IsShown(key)</code></td>
+<td>the addon's "Show the minimap button" setting. Since 1.18 this means <strong>pinned</strong>: its own button on the minimap as well as its row in the flyout</td>
+</tr>
+<tr>
+<td><code>:SetPinned(key, on)</code>, <code>:IsPinned(key)</code></td>
+<td>the same, by its new name <em>(1.18)</em></td>
+</tr>
+<tr>
+<td><code>:SetMainShown(on)</code>, <code>:IsMainShown()</code></td>
+<td>the Norgannon button itself <em>(1.18)</em></td>
+</tr>
+<tr>
+<td><code>:Status(key)</code></td>
+<td>the flyout's status line: the last tooltip line that is neither the name nor a click hint (a live line like "3 replies wait for you" beats the role line), else the registry's role <em>(1.18)</em></td>
+</tr>
+<tr>
+<td><code>Core.MinimapButton.buttons[key]</code></td>
+<td>the frame the addon is on screen: its own button when pinned, else the Norgannon button (anchor popups to it)</td>
+</tr>
+<tr>
+<td>saved</td>
+<td><code>NorgannonCoreDB.minimap = { v = 2, angle, hidden, addons = { [key] = { angle, pinned } } }</code>; the 1.17 per-addon entries migrate in, places kept, all unpinned</td>
+</tr>
+</tbody>
+</table></div>
+<p>Collecting other addons' minimap buttons (Minimap Button Bag style) is not done. If it is wanted later, limit it to buttons registered with LibDBIcon, which have a known API, rather than scraping the minimap's children.</p>
+<h2 id="recipes-114-norgannondb-14">Recipes (1.14, NorgannonDB 1.4)</h2>
+<div class="hl"><pre><span></span><code><span class="nv">Core</span><span class="p">.</span><span class="py">DB</span><span class="p">:</span><span class="nf">Recipe</span><span class="p">(</span><span class="nv">spellId</span><span class="p">)</span><span class="w">            </span><span class="c1">-- { skill, name, levels = {orange, yellow, green, grey}, learn, item, count,</span>
+<span class="w">                                   </span><span class="c1">--   reagents = {{itemId, count}}, trainers = {[npcId] = copper}, items, quests, auto }</span>
+<span class="nv">Core</span><span class="p">.</span><span class="py">DB</span><span class="p">:</span><span class="nf">RecipeName</span><span class="p">(</span><span class="nv">spellId</span><span class="p">)</span><span class="w">        </span><span class="c1">-- the client&#39;s (localized) spell name, else NorgannonDB&#39;s</span>
+<span class="nv">Core</span><span class="p">.</span><span class="py">DB</span><span class="p">:</span><span class="nf">Recipes</span><span class="p">(</span><span class="nv">skillLine</span><span class="p">)</span><span class="w">         </span><span class="c1">-- a profession&#39;s recipe ids, by learning skill then name</span>
+<span class="nv">Core</span><span class="p">.</span><span class="py">DB</span><span class="p">:</span><span class="nf">CraftedBy</span><span class="p">(</span><span class="nv">itemId</span><span class="p">)</span><span class="w">          </span><span class="c1">-- recipe ids that make the item</span>
+<span class="nv">Core</span><span class="p">.</span><span class="py">DB</span><span class="p">:</span><span class="nf">ReagentOf</span><span class="p">(</span><span class="nv">itemId</span><span class="p">)</span><span class="w">          </span><span class="c1">-- recipe ids that use it</span>
+<span class="nv">Core</span><span class="p">.</span><span class="py">DB</span><span class="p">:</span><span class="nf">RecipeTaughtBy</span><span class="p">(</span><span class="nv">itemId</span><span class="p">)</span><span class="w">     </span><span class="c1">-- the recipe a recipe item teaches, or nil</span>
+<span class="nv">Core</span><span class="p">.</span><span class="py">DB</span><span class="p">:</span><span class="nf">DisenchantedFrom</span><span class="p">(</span><span class="nv">itemId</span><span class="p">)</span><span class="w">   </span><span class="c1">-- { min, max = item levels, quality = {2, 3, 4} } for an enchanting material, or nil</span>
+<span class="nv">Core</span><span class="p">.</span><span class="py">DB</span><span class="p">.</span><span class="nf">RecipeColor</span><span class="p">(</span><span class="nv">rec</span><span class="p">,</span><span class="w"> </span><span class="nv">skill</span><span class="p">)</span><span class="w">    </span><span class="c1">-- &quot;red&quot; (can&#39;t learn yet) / &quot;orange&quot; / &quot;yellow&quot; / &quot;green&quot; / &quot;grey&quot;; nil without a skill</span>
+</code></pre></div>
+
+<p>The bars (<code>UI.Bar</code>) have a dark outline, and their dividing lines and party marker draw over the fill.</p>
+<h2 id="known-recipes-115">Known recipes (1.15)</h2>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>API</th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Player:KnownRecipes(skillLine)</code></td>
+<td>what a profession's scan found: <code>{ ids = { [spellId] = true }, count, source = "window" \| "spells", seen }</code>, or nil if nothing has been read</td>
+</tr>
+<tr>
+<td><code>Player:KnowsRecipe(spellId)</code></td>
+<td>true if a scan saw it learned; nil means "not seen", not "not known"</td>
+</tr>
+<tr>
+<td><code>Player:ScanRecipes()</code></td>
+<td>reads every profession again through <code>IsSpellKnown</code>, one per frame. It runs at login by itself</td>
+</tr>
+<tr>
+<td>message <code>NORGANNON_RECIPES_SCANNED (skillLine, count, source)</code></td>
+<td>after each scan</td>
+</tr>
+</tbody>
+</table></div>
+<p>Two readers feed it: at login every NorgannonDB recipe through <code>IsSpellKnown</code> (<code>"spells"</code>), and, whenever
+a profession window is ready, what <code>C_TradeSkillUI</code> lists as learned (<code>"window"</code>, which also holds recipes
+NorgannonDB doesn't have yet). Other people's linked professions are skipped. Neither reader removes anything.</p>
+<h2 id="bags-116">Bags (1.16)</h2>
+<p>Where a character's items live and what kind each is. It only reads: moving items is up to the add-on.</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>API</th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Core.Bags:BagList()</code></td>
+<td><code>{ { id, name, reagent?, keyring? } }</code>, backpack first. Bags go by their own item's name. Skip <code>keyring</code> when counting space</td>
+</tr>
+<tr>
+<td><code>Core.Bags:BankList(kind)</code></td>
+<td><code>kind</code> is <code>"Character"</code> or <code>"Account"</code>: purchased tabs if the client answers, else every bank container it names. Slots are only readable while the bank is open</td>
+</tr>
+<tr>
+<td><code>Core.Bags.Kind(id[, quality])</code></td>
+<td><code>"gear"</code>, <code>"consumable"</code>, <code>"trade"</code>, <code>"recipe"</code>, <code>"quest"</code>, <code>"key"</code>, <code>"junk"</code> or <code>"other"</code>; greys are junk unless a quest wants them</td>
+</tr>
+<tr>
+<td><code>Core.Bags.KINDS</code></td>
+<td>those kinds in reading order, as <code>{ key, label }</code></td>
+</tr>
+</tbody>
+</table></div>
+<h2 id="guild-roster-117">Guild roster (1.17)</h2>
+<p>The guild roster, read once for the whole suite, so two add-ons don't each poll it. It only reads.</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>API</th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Core.Guild:Watch(owner)</code> / <code>:Unwatch(owner)</code></td>
+<td>keeps the roster fresh (asked for once a minute) while anyone watches; asks at once</td>
+</tr>
+<tr>
+<td><code>Core.Guild:Known()</code>, <code>:InGuild()</code>, <code>:Name()</code></td>
+<td>whether a roster has been read, whether you're in a guild, its name</td>
+</tr>
+<tr>
+<td><code>Core.Guild:Get(name)</code></td>
+<td><code>{ name, full, rank, rankName, level, zone, online, class, guid }</code> or nil. <code>name</code> is the first name; <code>full</code> is the roster's own text</td>
+</tr>
+<tr>
+<td><code>Core.Guild:IsMember(name)</code>, <code>:Members()</code>, <code>:OnlineCount()</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>Core.Guild:CanInvite()</code></td>
+<td>the game's <code>CanGuildInvite</code></td>
+</tr>
+<tr>
+<td><code>Core.Guild:RankCanInvite(rank)</code>, <code>:Inviters()</code></td>
+<td>whether a rank can invite (flag 7 of <code>GuildControlGetRankFlags</code>, from <code>/cprobe</code>'s data), and who online can, guild master first, never you</td>
+</tr>
+<tr>
+<td><code>Core.Guild.Short(name)</code></td>
+<td>who someone is from any form of their name: "Tyrant Kuma", "Tyrant-Realm" and "Tyrant" are all "Tyrant"</td>
+</tr>
+<tr>
+<td>message <code>NORGANNON_GUILD_ROSTER (revision, joined, left)</code></td>
+<td>the roster changed: who joined and left since the last read, by first name (none on the first read)</td>
+</tr>
+<tr>
+<td>message <code>NORGANNON_GUILD_RECRUITED (name, source, by, when)</code></td>
+<td>sent by Muster when someone it asked joins, so another add-on can note where a member came from</td>
+</tr>
+</tbody>
+</table></div>
+<p>On Forever, the roster and <code>UnitName</code> give a character's first name, while chat gives first and last, and a whisper to the first name alone fails. <code>full</code> isn't promised to be something a whisper reaches.</p>
+<h2 id="building-an-add-on-119">Building an add-on (1.19)</h2>
+<p>The developer guide is <a href="getting-started.html">Getting started</a>, and what the client allows is <a href="forever-rules.html">What the client allows</a>.
+<a href="NorgannonTemplate.zip">NorgannonTemplate</a> is a small working example. Versions: an add-on written for 1.x runs on any
+later 1.x (a minor version only adds); a new major version may change things.</p>
+<p><strong>NorgannonDB is optional.</strong> Core's TOC lists it under <code>OptionalDeps</code>. Without it, <code>Core.DB</code> answers <code>nil</code> and empty
+lists, and the map, compass and quest features have nothing to draw. Add-ons that read the data list <code>NorgannonDB</code> in
+their own TOC's Dependencies.</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Call</th>
+<th>What it does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Core:NewAddon(key, opts)</code></td>
+<td>makes an add-on part of the suite and returns its table <code>A</code> (also the global <code>opts.global</code> or the folder name). If this Core or NorgannonDB can't serve it, <code>A.disabled</code> is true and the player is told once. <code>opts</code>: <code>folder</code>, <code>api = {1, 19}</code>, <code>data = {1, 4}</code>, <code>db</code>, <code>defaults</code>, <code>version</code>, <code>migrate</code>, <code>char</code>, <code>charDefaults</code>, <code>charVersion</code>, <code>charMigrate</code>, <code>slash = {"/x"}</code>, <code>commands = { name = fn(rest) \| {fn, "help"} }</code>, <code>minimap = false \| { onClick, onShiftClick, status, clickHint, shiftHint, rightHint }</code>, and for add-ons outside the registry <code>name</code>, <code>accent</code>, <code>role</code>, <code>mark</code></td>
+</tr>
+<tr>
+<td><code>A</code></td>
+<td><code>key</code>, <code>name</code>, <code>addonName</code>, <code>info</code>, <code>PREFIX</code>, <code>ACCENT</code>, <code>ready</code>, <code>db</code>, <code>char</code>, <code>:Print</code>, <code>:Debug</code>, <code>:Send</code>/<code>:Listen</code>/<code>:Unlisten</code> (messages prefixed <code>KEY_</code>), <code>:OnReady(fn)</code>, <code>:OnLogin(fn)</code>, <code>:AddSettingsPage(frame)</code>, <code>:OpenSettings()</code> (waits for the end of combat), <code>:RunCommand(msg)</code>, <code>:PrintHelp()</code>. Define <code>A:Toggle()</code> for the main action: left-click, and the slash command alone</td>
+</tr>
+<tr>
+<td><code>Core:SavedVars(name, { version, defaults, migrate })</code></td>
+<td>loads a saved variable: runs each migration it hasn't had, once and in order, deep-fills defaults without touching a player's values, and stores the version in <code>_v</code>. A save from before versioning counts as version 1, and a new save starts at <code>version</code></td>
+</tr>
+<tr>
+<td><code>Core.FillDefaults(target, defaults)</code></td>
+<td>the deep fill on its own</td>
+</tr>
+<tr>
+<td><code>Core:HasData()</code></td>
+<td>whether NorgannonDB is loaded</td>
+</tr>
+<tr>
+<td><code>Core:DefineAddon({ key, name, folder, accent, role, slash, mark })</code></td>
+<td>makes an add-on outside the suite list known to the flyout, <code>UI.Accent</code> and <code>UI.Mark</code>; the suite's own keys can't be redefined</td>
+</tr>
+<tr>
+<td><code>Core:IsDeprecated(major)</code>, <code>Core:RequireMessage(name, major, minor)</code></td>
+<td>the player-facing reason an add-on can't run, or nil (<code>IsDeprecated</code> is false on 1.x: <code>Core.COMPAT</code> is empty)</td>
+</tr>
+<tr>
+<td><code>UI.MarkPath(key)</code></td>
+<td>an add-on's mark texture: its own <code>mark</code>, the Core's <code>marks\&lt;key&gt;</code>, else NorgannonDB's</td>
+</tr>
+</tbody>
+</table></div>
+<p>Calling the client: any call may be missing on Forever, error, or answer with a secret value.</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Call</th>
+<th>What it does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Core.Fn(ns, name)</code>, <code>Core.Has(ns, name)</code></td>
+<td>the client function <code>ns.name</code> (or the global <code>name</code> when <code>ns</code> is nil), or nil; whether it exists</td>
+</tr>
+<tr>
+<td><code>Core.Call(fn, ...)</code></td>
+<td><code>ok, ...</code> through <code>pcall</code>, with values exactly as they came, secrets included: for widgets that take secrets</td>
+</tr>
+<tr>
+<td><code>Core.Plain(fn, ...)</code>, <code>Core.Global(name, ...)</code>, <code>Core.In(ns, name, ...)</code></td>
+<td>the answer with every secret turned into nil, and nil when the function is missing or errored: for logic that branches</td>
+</tr>
+<tr>
+<td><code>Core.SetSecret(obj, method, ...)</code></td>
+<td><code>obj:method(...)</code> with arguments that may be secret; false if the client refused</td>
+</tr>
+<tr>
+<td><code>Core.Now()</code></td>
+<td>the server's time, else the computer's</td>
+</tr>
+</tbody>
+</table></div>
+<h2 id="names-restrictions-and-action-rows-120">Names, restrictions and action rows (1.20)</h2>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Call</th>
+<th>What it does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Core.Names.First(name)</code></td>
+<td>the first name, which is who the roster and <code>UnitName</code> say: "Tyrant Kuma", "Tyrant-Realm" and "Tyrant" are all "Tyrant". nil for a secret or empty name. <code>Core.Guild.Short</code> is the same function</td>
+</tr>
+<tr>
+<td><code>Core.Names.Full(name)</code></td>
+<td>the name with the realm off and spaces trimmed, surname kept</td>
+</tr>
+<tr>
+<td><code>Core.Names.Key(name)</code>, <code>.HasSurname(name)</code>, <code>.Me()</code>, <code>.IsMe(name)</code></td>
+<td>a save key (the first name in lower case); whether a name has a surname; your own name in full when the client gives it; whether a name is you</td>
+</tr>
+<tr>
+<td><code>Core.Names:Address(nameOrUnit)</code></td>
+<td>the name a whisper reaches ("First Last"), from a unit, a full name, or a first name chat has shown in full. nil when it's unknown or two people share the first name. On Forever a whisper to a first name alone fails</td>
+</tr>
+<tr>
+<td><code>Core.Names:Learn(full, guid)</code></td>
+<td>remembers a full name. Core learns from every chat line and add-on message by itself</td>
+</tr>
+<tr>
+<td><code>Core:Restricted(what)</code></td>
+<td>why <code>what</code> can't happen now, or nil: <code>"combat"</code> (protected frames), <code>"fight"</code> (default: combat, an encounter, M+ or a PvP match) or <code>"send"</code> (add-on messages: chat lockdown or a restriction covering them). Combat comes from <code>InCombatLockdown</code>, because the client's restriction check reads false in open-world combat. Message <code>NORGANNON_RESTRICTIONS_CHANGED</code></td>
+</tr>
+<tr>
+<td><code>UI.ActionList(parent, { rowHeight, groupBand })</code></td>
+<td>a <code>UI.List</code> of rows <code>{ title, sub, right, id, link, icon, tip, onClick, actions = { { text, run(shift), off, tip, width } } }</code>, or <code>{ group = "Heading" }</code>. A row with an item (<code>id</code> or <code>link</code>) shows its icon and tooltip. Buttons sit at the row's end; the title stops short of them</td>
+</tr>
+<tr>
+<td><code>UI.Input(parent, { multiline, onChange, onSubmit, size, maxLetters })</code></td>
+<td>a text field in the suite's look: <code>:SetText</code>, <code>:GetText</code>, <code>:SetFocus</code>, <code>:ClearFocus</code>, <code>.edit</code></td>
+</tr>
+<tr>
+<td><code>Core:NewAddon</code> options <em>(1.20)</em></td>
+<td><code>onUnknown = fn(msg)</code>: any slash word that isn't a command (Retrospect searches, Oracle opens an instance); <code>help</code> still lists the commands. <code>ownLoad = true</code>: the add-on loads its own saved variables and sets <code>A.ready</code> itself, and defines its own <code>A:OnReady</code> (Clairvoyance)</td>
+</tr>
+<tr>
+<td><code>UI.Tip(owner, textOrFn)</code></td>
+<td>a one-line wrapped tooltip</td>
+</tr>
+<tr>
+<td><code>UI.C.good</code>, <code>bad</code>, <code>warn</code>, <code>info</code>, <code>hint</code></td>
+<td>state colours (done, failed, waiting, notice) and click hints. <code>UI.State(name)</code> gives a <code>\|cff</code> code. Use these, never your own reds and greens</td>
+</tr>
+<tr>
+<td><code>UI.AccentText(key)</code>, <code>UI.Contrast(a, b)</code></td>
+<td>an add-on's accent made readable as text on the stone background (a dark accent is lightened); the contrast ratio of two colours</td>
+</tr>
+</tbody>
+</table></div>
+<h2 id="add-on-messages-corenet-121">Add-on messages (<code>Core.Net</code>, 1.21)</h2>
+<p>Messages under an add-on's own prefix. They move text: each add-on turns its data into text and back itself (Council
+uses its own serializer).</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Call</th>
+<th>What it does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Core.Net:Channel(prefix, opts)</code></td>
+<td>one channel per prefix. <code>opts</code>: <code>onMessage(text, first, sender, distribution)</code> for each message from someone else; <code>distributions</code> (a set; default guild, officer, raid, party, whisper, instance); <code>maxIncoming</code> (120000); <code>maxQueue</code> (200); <code>compressFrom</code> (120); <code>onDrain()</code> after held messages go out</td>
+</tr>
+<tr>
+<td><code>ch:Send(text, distribution, target, priority, volatile)</code></td>
+<td>true when it went out now. In chat lockdown it waits in the queue, unless <code>volatile</code>. A whisper goes to the full name the channel or <code>Core.Names</code> has seen</td>
+</tr>
+<tr>
+<td><code>ch:Blocked()</code></td>
+<td><code>"lockdown"</code>, <code>"refused"</code> (the game turned down the last test send) or nil</td>
+</tr>
+<tr>
+<td><code>ch:Test()</code>, <code>ch.refused</code>, <code>ch.lastResult</code></td>
+<td>a real test send in the guild, because <code>AreOutgoingAddonChatMessagesRestricted</code> can't tell (it read true on Forever while messages flowed)</td>
+</tr>
+<tr>
+<td><code>ch:QueueSize()</code>, <code>ch:Tick()</code></td>
+<td>Core ticks every channel each second</td>
+</tr>
+<tr>
+<td><code>Net.Pack(text, compressFrom)</code>, <code>Net.Unpack(wire, maxIncoming)</code></td>
+<td>the wire framing: <code>"T"</code> plus text, or <code>"Z"</code> plus compressed base64 when the client has <code>C_EncodingUtil</code> and it is shorter</td>
+</tr>
+</tbody>
+</table></div>
+<p>Incoming messages that are secret, from yourself or from an unexpected distribution are dropped, and nothing a peer
+sends can raise an error.</p>
+<h2 id="classic-functions-and-the-client-123">Classic functions and the client (1.23)</h2>
+<p>WoW Forever's client has no <code>GetSpellInfo</code>, <code>GetItemInfo</code>, <code>GetContainerItemInfo</code> and dozens more: they moved into
+<code>C_Spell</code>, <code>C_Item</code>, <code>C_Container</code>, <code>C_SpellBook</code> and <code>C_AddOns</code>, often returning a table instead of several values.
+<code>Core.Compat</code> gives them back with the classic return values. It never writes globals.</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Call</th>
+<th>What it does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Core.Compat.&lt;ClassicName&gt;(...)</code></td>
+<td>the classic function's answer: the client's own global when it has one, else the replacement reshaped. 58 functions (41 by hand, 17 generated from ForeverAPI's relocated-API table by <code>tools/compat_gen.py</code>), listed in <code>Core.Compat.MAP</code> (classic name to replacement), among them <code>GetSpellInfo</code> (the rank is the spell's subtext), <code>GetSpellCooldown</code>, <code>GetSpellCharges</code>, <code>GetSpellTexture</code>, <code>IsUsableSpell</code>, <code>GetItemInfo</code>, <code>GetItemInfoInstant</code>, <code>GetItemCooldown</code>, <code>GetItemCount</code>, <code>GetContainerItemInfo</code>, <code>GetContainerNumSlots</code>, <code>GetNumSpellTabs</code>, <code>GetSpellTabInfo</code>, <code>GetSpellBookItemName</code>/<code>Info</code>/<code>Texture</code> (with <code>"spell"</code> or <code>"pet"</code>), <code>GetAddOnMetadata</code>, <code>IsAddOnLoaded</code>, <code>UnitAura</code>/<code>UnitBuff</code>/<code>UnitDebuff</code>, <code>GetMouseFocus</code></td>
+</tr>
+<tr>
+<td>secret values</td>
+<td>spell cooldowns and charges are secret in combat on Forever: <code>Compat.GetSpellCooldown</code> hands them back as they came. Pass them to widgets; don't compare them</td>
+</tr>
+<tr>
+<td>auras</td>
+<td>add-ons can't read auras in combat (the call errors): <code>Compat.UnitAura</code> and friends answer nil then</td>
+</tr>
+<tr>
+<td><code>Core.Client.IsForever()</code></td>
+<td>true on WoW Forever (interface 16000-16999). Use this, not <code>WOW_PROJECT_ID</code>, which is 18 there (<code>WOW_PROJECT_CAMELOT</code>), neither Classic nor Mainline</td>
+</tr>
+<tr>
+<td><code>Core.Client.Flavor()</code></td>
+<td><code>"forever"</code>, else what <code>WOW_PROJECT_ID</code> says: <code>"classic"</code>, <code>"tbc"</code>, <code>"wrath"</code>, <code>"cata"</code>, <code>"mists"</code>, <code>"retail"</code>, or <code>"unknown"</code></td>
+</tr>
+<tr>
+<td><code>Core.Client.IsClassicWorld()</code></td>
+<td>true where the maps, zones and quests are Classic's (Forever and Classic Era)</td>
+</tr>
+<tr>
+<td><code>Core.Client.Interface()</code></td>
+<td>the interface number (16001 on Forever 1.60.1)</td>
+</tr>
+</tbody>
+</table></div>
+<h2 id="secret-values-and-auras-124">Secret values and auras (1.24)</h2>
+<p>On WoW Forever health is always secret, and in combat so are about 90 other getters (cooldowns, charges, stats,
+threat). Add-on code may not compare, add or format a secret. It may hand one to the widget calls Blizzard marks
+"AllowedWhenTainted": StatusBar <code>SetValue</code>, <code>SetMinMaxValues</code>, <code>SetStatusBarColor</code>; FontString <code>SetText</code>,
+<code>SetFormattedText</code>, <code>SetTextColor</code>; Texture <code>SetVertexColor</code>, <code>SetAlpha</code>; <code>SetAlphaFromBoolean</code> on textures and
+frames. Not <code>SetShown</code>, and no Cooldown setter (those take secrets only from Blizzard's own code).</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Call</th>
+<th>What it does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>UI.UnitBar(parent, opts)</code></td>
+<td>a health (or <code>kind = "power"</code>) bar that never reads the numbers. <code>opts</code>: <code>color</code> = <code>{r, g, b}</code> or <code>"gradient"</code> (red to green by health, through a curve); <code>text</code> = <code>"current"</code>, <code>"percent"</code>, <code>"missing"</code> or <code>"none"</code>; <code>short</code> (1.3K); <code>height</code>, <code>textSize</code>. <code>:SetUnit(unit)</code>, then <code>:Update()</code> on <code>UNIT_HEALTH</code> and friends</td>
+</tr>
+<tr>
+<td><code>Core.Secret.Curve(points, kind)</code>, <code>.ColorCurve(points, kind)</code></td>
+<td>a number curve <code>{ {x, y}, ... }</code> or a colour curve <code>{ {x, r, g, b[, a]}, ... }</code>, <code>kind</code> <code>"Linear"</code> or <code>"Step"</code>. <code>UnitHealthPercent(unit, true, curve)</code> evaluates one on a unit's health without your code reading it</td>
+</tr>
+<tr>
+<td><code>Core.Secret.Text(fs, fmt, ...)</code>, <code>.Number(fs, value, short, prefix)</code></td>
+<td>text from values that may be secret, through <code>SetFormattedText</code></td>
+</tr>
+<tr>
+<td><code>Core.Secret.Alpha(region, bool, on, off)</code></td>
+<td>show or fade by a boolean that may be secret (<code>SetAlphaFromBoolean</code>): the way to "show if", since <code>SetShown</code> won't take a secret</td>
+</tr>
+<tr>
+<td><code>Core.Secret.Color(region, color)</code>, <code>.ColorFromBoolean(bool, whenTrue, whenFalse)</code></td>
+<td>a colour that may be secret onto a status bar, text or texture; one of two colours by a secret boolean</td>
+</tr>
+<tr>
+<td><code>UI.UnitAuras(parent, unit, opts)</code></td>
+<td>a container the game fills with the unit's auras, in combat too (add-ons can't read auras in combat on Forever, but the game can draw them). <code>opts</code>: <code>debuffs</code> (3), <code>buffs</code> (0), <code>size</code> (14), <code>dispel</code> = <code>"mine"</code>, <code>"any"</code> or <code>"off"</code>. <code>:SetUnit</code>, <code>:SetOptions</code>, <code>:Release</code> wait for combat to end; <code>.state</code> says <code>"working"</code>, <code>"missing"</code>, <code>"refused"</code> or <code>"error"</code></td>
+</tr>
+</tbody>
+</table></div>
+<p>Testing without the game: <code>tools/harness/secrets.lua</code> simulates secrets and combat in the stub client.
+<code>STUB.Secrets.Enable()</code> makes health secret and errors on misuse (ordering, joining, measuring, indexing a secret,
+or giving one to a widget call that won't take it); <code>STUB.Secrets.Combat(true)</code> is combat lockdown, with the in-combat
+secrets and the aura rule. <code>STUB.Secrets.Reveal(v)</code> shows the value behind a secret, for checks.</p>
+<h2 id="chat-lines-from-add-ons-125">Chat lines from add-ons (1.25)</h2>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Call</th>
+<th>What it does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Core:Say(text, kind[, target])</code></td>
+<td>says a line in <code>"SAY"</code>, <code>"YELL"</code>, <code>"EMOTE"</code>, <code>"PARTY"</code>, <code>"RAID"</code>, <code>"RAID_WARNING"</code>, <code>"GUILD"</code>, <code>"OFFICER"</code>, <code>"INSTANCE_CHAT"</code> or <code>"WHISPER"</code> (to <code>target</code>, reached at their full name). It watches for the line to come back; if it doesn't, or the client refuses it, it opens the chat box with the line ready for the player to send with Enter, and remembers that for this kind of chat, in instances and outside them separately. Returns <code>"sent"</code>, <code>"box"</code> or false. Call it from a click or a command</td>
+</tr>
+<tr>
+<td><code>Core:OpenChat(text)</code></td>
+<td>opens the chat box with text ready</td>
+</tr>
+<tr>
+<td><code>Core:ResetSay()</code></td>
+<td>forgets which chats reach</td>
+</tr>
+</tbody>
+</table></div></article></div>
+</main>
+<footer class="foot">
+  <div class="foot-inner">
+    <div class="foot-brand">
+      <a class="brand" href="../index.html"><img src="../img/marks/core-64.png" alt="" width="34" height="34"><span>Norgannon</span></a>
+      <p>Add-ons made for WoW Forever. Free, and better every time someone plays.</p>
+    </div>
+    <div class="foot-col">
+      <h4>Add-ons</h4>
+      <a href="../addons.html#world">Out in the world</a>
+      <a href="../addons.html#group">In a group</a>
+      <a href="../addons.html#account">Your account</a>
+      <a href="../addons.html#guild">Your guild</a>
+      <a href="../addons.html#install">How to install</a>
+    </div>
+    <div class="foot-col">
+      <h4>Community</h4>
+      <a href="../improve.html">Help improve it</a>
+      <a href="../index.html#faq">Questions</a>
+      <a href="https://github.com/zmarotrix">GitHub</a>
+    </div>
+    <div class="foot-col">
+      <h4>Developers</h4>
+      <a href="../developers/index.html">Build on Norgannon</a>
+      <a href="../developers/getting-started.html">Getting started</a>
+      <a href="../api/index.html">Forever API reference</a>
+    </div>
+  </div>
+  <div class="foot-fine">
+    <p>Made by <b>Maro</b>. Quest, creature, object and item data from <a href="https://github.com/Questie/Questie">Questie and QuestieDB</a>
+      (GPL-3.0) and <a href="https://github.com/shagu/pfQuest">pfQuest</a> by Shagu (MIT). Dungeon data from DungeonJournal by
+      Exehn, used with permission. Fonts: Marcellus and Alegreya Sans (SIL Open Font License).</p>
+    <p>Not affiliated with Blizzard Entertainment or the WoW Forever team. World of Warcraft is a trademark of Blizzard
+      Entertainment.</p>
+  </div>
+</footer>
+<script>
+(function () {
+  var b = document.getElementById("menu"), n = document.getElementById("nav"), top = document.getElementById("top");
+  b.addEventListener("click", function () {
+    var open = n.classList.toggle("open");
+    b.setAttribute("aria-expanded", open ? "true" : "false");
+  });
+  var onScroll = function () { top.classList.toggle("scrolled", window.scrollY > 8); };
+  window.addEventListener("scroll", onScroll, { passive: true });
+  onScroll();
+  // sections fade up as they come into view (everything is visible without script or with reduced motion)
+  if ("IntersectionObserver" in window && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    var els = document.querySelectorAll(".section-head, .pillar, .feature, .showcase, .steps-row li, .faq, .cta, .bigstats, .privacy > div, .split > div, .credits");
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add("shown"); io.unobserve(e.target); } });
+    }, { rootMargin: "0px 0px -8% 0px" });
+    var vh = window.innerHeight;
+    els.forEach(function (el) {
+      if (el.getBoundingClientRect().top < vh) return;   // already on screen (or jumped to): show it as it is
+      el.classList.add("reveal", "pending"); io.observe(el);
+    });
+  }
+})();
+</script>
+</body>
+</html>

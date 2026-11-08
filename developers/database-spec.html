@@ -1,0 +1,873 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Database specification · Norgannon developers</title>
+<meta name="description" content="How to build WoW Forever add-ons on Norgannon Core.">
+<meta name="theme-color" content="#0b0907">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Database specification · Norgannon developers">
+<meta property="og:description" content="How to build WoW Forever add-ons on Norgannon Core.">
+<meta property="og:image" content="../img/social-card.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" type="image/png" sizes="32x32" href="../img/marks/core-32.png">
+<link rel="apple-touch-icon" href="../img/marks/core-256.png">
+<link rel="preload" href="../fonts/Marcellus-Regular.ttf" as="font" type="font/ttf" crossorigin>
+<link rel="stylesheet" href="../style.css">
+</head>
+<body class="">
+<a class="skip" href="#main">Skip to content</a>
+<header class="top" id="top">
+  <div class="top-inner">
+    <a class="brand" href="../index.html"><img src="../img/marks/core-64.png" alt="" width="34" height="34"><span>Norgannon</span></a>
+    <nav class="nav" id="nav" aria-label="Main">
+      <a href="../index.html">Home</a>
+      <a href="../addons.html">Add-ons</a>
+      <a href="../improve.html">Help improve it</a>
+      <a href="../index.html#faq">FAQ</a>
+      <a href="../developers/index.html" class="on" aria-current="page">For developers</a>
+    </nav>
+    <a class="btn small nav-cta" href="../addons.html">Get the add-ons</a>
+    <button class="menu" id="menu" aria-label="Menu" aria-expanded="false" aria-controls="nav">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</header>
+<main id="main">
+<div class="wrap doc"><aside class="toc"><div class="docs-nav"><p class="toc-title">Developers</p><a href="index.html">Overview</a><a href="getting-started.html">Getting started</a><a href="forever-rules.html">What the client allows</a><a href="core-api.html">Core API</a><a href="database-spec.html" class="on">Database specification</a></div><div class="on-page"><p class="toc-title">On this page</p><a href="#1-loading-and-versioning">1. Loading and versioning</a><a href="#2-conventions">2. Conventions</a><a href="#3-entities">3. Entities</a><a href="#4-localization-norgannondblocaleslocale">4. Localization — NorgannonDB.locales[locale]</a><a href="#5-player-dependent-variants">5. Player-dependent variants</a><a href="#6-corrections-runtime-additions">6. Corrections (runtime additions)</a><a href="#7-sources-and-precedence">7. Sources and precedence</a></div></aside><article class="prose"><h1 id="norgannondb-data-specification-schema-14">NorgannonDB data specification — schema 1.4</h1>
+<p>NorgannonDB is an addon-neutral game database: quests, NPCs, objects, items, loot, vendors,
+spawns, area triggers, zones, maps, factions and tracking categories. Any addon may read it.
+It ships no UI and needs no other addon.</p>
+<p>This document is the contract. Field names, units and meanings below are stable within a
+schema <strong>major</strong> version. Additive changes (new optional fields, new tables) bump the
+<strong>minor</strong> version. Anything that changes or removes the meaning of an existing field bumps the
+major version.</p>
+<h2 id="1-loading-and-versioning">1. Loading and versioning</h2>
+<div class="hl"><pre><span></span><code><span class="c1">-- in your TOC:  ## OptionalDeps: NorgannonDB   (or ## Dependencies: NorgannonDB)</span>
+<span class="kd">local</span><span class="w"> </span><span class="nv">DB</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">NorgannonDB</span>
+<span class="kr">if</span><span class="w"> </span><span class="ow">not</span><span class="w"> </span><span class="nv">DB</span><span class="w"> </span><span class="ow">or</span><span class="w"> </span><span class="ow">not</span><span class="w"> </span><span class="nv">DB</span><span class="p">:</span><span class="nf">RequireSchema</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="kr">then</span><span class="w"> </span><span class="kr">return</span><span class="w"> </span><span class="kr">end</span><span class="w">   </span><span class="c1">-- major 1, at least minor 1</span>
+</code></pre></div>
+
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>NorgannonDB.schema</code></td>
+<td><code>{ major = 1, minor = 2 }</code></td>
+</tr>
+<tr>
+<td><code>NorgannonDB.info</code></td>
+<td><code>{ flavor, interface, build, generated, sources = { {name, version, commit, license} } }</code></td>
+</tr>
+<tr>
+<td><code>NorgannonDB:RequireSchema(major, minMinor)</code></td>
+<td><code>true</code> if this data can serve a consumer written for that version; otherwise <code>false, message</code></td>
+</tr>
+<tr>
+<td><code>NorgannonDB:Get(kind, id)</code></td>
+<td><em>(1.1)</em> the record with every field decoded; same table as <code>NorgannonDB[kind][id]</code></td>
+</tr>
+<tr>
+<td><code>NorgannonDB:Peek(kind, id)</code></td>
+<td><em>(1.1)</em> read-only view for bulk scans: a record not decoded yet comes back as a temporary copy and stays packed</td>
+</tr>
+<tr>
+<td><code>NorgannonDB:PeekLocale(kind, id)</code></td>
+<td><em>(1.1)</em> the same for the active locale's entry (§4)</td>
+</tr>
+</tbody>
+</table></div>
+<p>Schema history: <strong>1.4</strong> <code>recipes</code> (every crafting recipe: skill-up colours, product, reagents, where it is learned) and <code>index.recipes</code>. <strong>1.3</strong> <code>instances</code> (dungeons and raids, with wings, bosses in order, each boss's own loot and the quests for them), reference loot table chances filled into <code>drops</code>. <strong>1.2</strong> quest <code>hidden</code> / <code>hiddenReason</code>, the <code>index</code> tables (hidden quests are left out of them). <strong>1.1</strong> packed records (§2 "Packed records"), <code>Get</code>, <code>Peek</code>, <code>PeekLocale</code>.</p>
+<h2 id="2-conventions">2. Conventions</h2>
+<ul>
+<li><strong>IDs</strong> are the game's own IDs: quest ID, creature entry, gameobject entry, item ID,
+  AreaTable ID, faction ID, skill line ID, spell ID.</li>
+<li><strong>Zones</strong> are AreaTable IDs (<code>areaId</code>), never UiMapIDs. Use <code>NorgannonDB.maps</code> to convert.</li>
+<li><strong>Coordinates</strong> are percentages <code>0..100</code> of the zone's map <strong>in the target client's map
+  frame</strong> (for Forever, the Forever map, which differs from Era in Mulgore, Eastern
+  Plaguelands, Redridge Mountains and Stormwind City). <code>{-1, -1}</code> means "inside an instance in
+  this zone, position unknown".</li>
+<li><strong>Spawn lists</strong> (<code>SpawnList</code>): <code>{ [areaId] = { {x, y, respawn, phase}, ... } }</code>.
+  <code>respawn</code> is seconds (<code>nil</code>/<code>0</code> = unknown). <code>phase</code> is an optional phase ID.</li>
+<li><strong>Waypoint lists</strong>: <code>{ [areaId] = { { {x, y}, {x, y}, ... }, ... } }</code>, one array per path.</li>
+<li><strong>Faction reaction</strong>: <code>"A"</code> friendly to Alliance, <code>"H"</code> friendly to Horde, <code>"AH"</code> friendly
+  to both, <code>nil</code> hostile to both.</li>
+<li><strong>Masks</strong>: <code>races</code> and <code>classes</code> are bitmasks; <code>nil</code> or <code>0</code> means "no restriction".
+  Race bits are <code>NorgannonDB.enums.raceMaskById[raceId]</code> (UnitRace's 3rd return). Forever's race
+  bits go above 2^32, so <strong>test them with arithmetic, never with the 32-bit <code>bit</code> library</strong>:
+  <code>NorgannonDB.HasFlag(mask, flag)</code> does <code>mask % (2*flag) &gt;= flag</code>.</li>
+<li><strong>Chances</strong> are percentages (<code>12.5</code> = 12.5%). <code>0</code> means "drops, chance unknown or
+  conditional".</li>
+<li><strong>Lists</strong> are plain Lua arrays. Absent means empty. Records never contain empty tables.</li>
+<li>Records are shared, read-only tables. Copy before mutating, or use corrections (§6).</li>
+</ul>
+<p><strong>Packed records</strong> <em>(1.1)</em>. <code>quests</code>, <code>npcs</code>, <code>objects</code>, <code>items</code> and the active locale's
+<code>quests</code> hold every ID as a real table, so <code>NorgannonDB.npcs[id]</code>, <code>pairs(NorgannonDB.npcs)</code> and
+<code>record.field</code> work as before. To keep memory low, a record's <code>name</code> is stored as is and its
+other fields are decoded the first time any of them is read; the decoded record then stays.
+What this means for consumers:</p>
+<ul>
+<li>Iterating a whole kind and reading only <code>name</code> (or <code>NorgannonDB:L(kind, id)</code>) decodes nothing.</li>
+<li><code>pairs(record)</code> / <code>next(record)</code> on a record none of whose other fields has been read yet
+  only sees <code>name</code>. Call <code>NorgannonDB:Get(kind, id)</code> first when you iterate a record's fields.</li>
+<li>For scans that read more than <code>name</code> from many records once (building your own index), use
+  <code>NorgannonDB:Peek(kind, id)</code>: it does not keep the decoded records in memory.</li>
+<li><code>NorgannonDB.provenance[kind][id]</code> can still be read but cannot be iterated; use
+  <code>GetProvenance</code>.</li>
+</ul>
+<h2 id="3-entities">3. Entities</h2>
+<h3 id="31-norgannondbquestsquestid">3.1 <code>NorgannonDB.quests[questId]</code></h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>name</code></td>
+<td>string</td>
+<td>enUS title (localized in <code>locales</code>)</td>
+</tr>
+<tr>
+<td><code>level</code></td>
+<td>number</td>
+<td>quest level (<code>-1</code> = scales with player)</td>
+</tr>
+<tr>
+<td><code>minLevel</code>, <code>maxLevel</code></td>
+<td>number</td>
+<td>player level window</td>
+</tr>
+<tr>
+<td><code>races</code>, <code>classes</code></td>
+<td>mask</td>
+<td>allowed races / classes</td>
+</tr>
+<tr>
+<td><code>zoneOrSort</code></td>
+<td>number</td>
+<td><code>&gt;0</code> areaId the quest belongs to, <code>&lt;0</code> QuestSort (class/profession/holiday category)</td>
+</tr>
+<tr>
+<td><code>starters</code></td>
+<td><code>{ npcs={}, objects={}, items={} }</code></td>
+<td>who/what starts it</td>
+</tr>
+<tr>
+<td><code>finishers</code></td>
+<td><code>{ npcs={}, objects={} }</code></td>
+<td>who/what completes it</td>
+</tr>
+<tr>
+<td><code>objectives</code></td>
+<td>Objectives</td>
+<td>see below</td>
+</tr>
+<tr>
+<td><code>text</code></td>
+<td><code>{ objectives = {lines}, description = string }</code></td>
+<td>enUS quest text (<code>$N</code>, <code>$C</code>, <code>$R</code>, <code>$B</code>, <code>$G</code> tokens kept)</td>
+</tr>
+<tr>
+<td><code>sourceItem</code></td>
+<td>itemId</td>
+<td>item handed out by the starter</td>
+</tr>
+<tr>
+<td><code>startNote</code></td>
+<td>string</td>
+<td><em>(1.3)</em> where to pick it up, in English, when no starter is known (from DungeonJournal)</td>
+</tr>
+<tr>
+<td><code>requiredItems</code></td>
+<td>{itemId}</td>
+<td>items needed to start / that are not objectives</td>
+</tr>
+<tr>
+<td><code>prerequisites</code></td>
+<td><code>{ all = {questIds}, any = {questIds} }</code></td>
+<td>all of <code>all</code> and one of <code>any</code> must be complete</td>
+</tr>
+<tr>
+<td><code>exclusiveTo</code></td>
+<td>{questIds}</td>
+<td>completing/taking one of these locks this quest</td>
+</tr>
+<tr>
+<td><code>inGroupWith</code></td>
+<td>{questIds}</td>
+<td>quests of the same group</td>
+</tr>
+<tr>
+<td><code>childQuests</code></td>
+<td>{questIds}</td>
+<td>quests this unlocks</td>
+</tr>
+<tr>
+<td><code>nextQuestInChain</code>, <code>parentQuest</code></td>
+<td>questId</td>
+<td>chain links</td>
+</tr>
+<tr>
+<td><code>breadcrumbFor</code> / <code>breadcrumbs</code></td>
+<td questIds="questIds">questId /</td>
+<td>optional lead-in quests</td>
+</tr>
+<tr>
+<td><code>availableStartingWith</code></td>
+<td>questId</td>
+<td>becomes available while that quest is active or done</td>
+</tr>
+<tr>
+<td><code>availableUntilCompleted</code></td>
+<td>questId</td>
+<td>unavailable once that quest is done</td>
+</tr>
+<tr>
+<td><code>disabledByQuest</code></td>
+<td>questId</td>
+<td>unavailable while that quest is active</td>
+</tr>
+<tr>
+<td><code>requiredSkill</code></td>
+<td><code>{skillId, value}</code></td>
+<td>profession requirement</td>
+</tr>
+<tr>
+<td><code>requiredRanks</code></td>
+<td><code>{ {skillId, value}, ... }</code></td>
+<td>alternative profession ranks</td>
+</tr>
+<tr>
+<td><code>requiredMinRep</code>, <code>requiredMaxRep</code></td>
+<td><code>{factionId, value}</code></td>
+<td>reputation window</td>
+</tr>
+<tr>
+<td><code>requiredSpell</code>, <code>requiredSpecialization</code></td>
+<td>id</td>
+<td></td>
+</tr>
+<tr>
+<td><code>flags</code>, <code>specialFlags</code></td>
+<td>mask</td>
+<td>QuestFlags / special flags (repeatable=1, event=2, monthly=4, ...)</td>
+</tr>
+<tr>
+<td><code>event</code></td>
+<td>true</td>
+<td>seasonal / world-event quest</td>
+</tr>
+<tr>
+<td><code>hidden</code></td>
+<td><code>true</code> | <code>"map"</code></td>
+<td><em>(1.2)</em> <code>true</code>: not obtainable in the game; never offer it (search, map, available quests). <code>"map"</code>: real, but don't show it as available on the map</td>
+</tr>
+<tr>
+<td><code>hiddenReason</code></td>
+<td>string</td>
+<td><em>(1.2)</em> <code>"questie"</code> (Questie's blacklist), <code>"notInQuestie"</code> (only in pfQuest's client-file data: cut or unconfirmed), <code>"placeholder"</code> (<code>&lt;UNUSED&gt;</code>, <code>&lt;NYI&gt;</code>, ...)</td>
+</tr>
+<tr>
+<td><code>rewards</code></td>
+<td>Rewards</td>
+<td>see below</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>Objectives</strong></p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>npcs</code></td>
+<td><code>{ {id, text, icon}, ... }</code></td>
+<td>kill / talk to</td>
+</tr>
+<tr>
+<td><code>objects</code></td>
+<td><code>{ {id, text, icon}, ... }</code></td>
+<td>interact</td>
+</tr>
+<tr>
+<td><code>items</code></td>
+<td><code>{ {id, text, icon}, ... }</code></td>
+<td>collect</td>
+</tr>
+<tr>
+<td><code>reputation</code></td>
+<td><code>{factionId, value}</code></td>
+<td>reach standing</td>
+</tr>
+<tr>
+<td><code>killCredit</code></td>
+<td><code>{ {npcs = {ids}, credit = npcId, text, icon}, ... }</code></td>
+<td>any of <code>npcs</code> gives credit for <code>credit</code></td>
+</tr>
+<tr>
+<td><code>spells</code></td>
+<td><code>{ {id, text, item}, ... }</code></td>
+<td>cast spell (optionally using item)</td>
+</tr>
+<tr>
+<td><code>areaTriggers</code></td>
+<td>{triggerIds}</td>
+<td>explore (see <code>areaTriggers</code>)</td>
+</tr>
+<tr>
+<td><code>zones</code></td>
+<td>{areaIds}</td>
+<td>use quest item somewhere in that area</td>
+</tr>
+<tr>
+<td><code>useItemOn</code></td>
+<td><code>{ [itemId] = { npcs = {[npcId]=spellId}, objects = {[objectId]=spellId} } }</code></td>
+<td>item must be used on targets</td>
+</tr>
+<tr>
+<td><code>explore</code></td>
+<td><code>{ text, spawns = SpawnList }</code></td>
+<td>completion trigger location</td>
+</tr>
+<tr>
+<td><code>extra</code></td>
+<td><code>{ {spawns, icon, text, index, references}, ... }</code></td>
+<td>hidden/special objectives</td>
+</tr>
+</tbody>
+</table></div>
+<p>| <code>order</code> | <code>{ {kind, index}, ... }</code> | the client's objective index order, e.g. <code>{ {"items",1}, {"npcs",1} }</code>: quest-log objective <em>n</em> is <code>objectives[order[n][1]][order[n][2]]</code>. Absent when there is at most one objective (the order is then trivial) |</p>
+<p><code>text</code> and <code>icon</code> inside objective entries are optional overrides.</p>
+<p><strong>Rewards</strong>: <code>{ xp = number, xpLevel = number, reputation = { {factionId, value}, ... }, items = {itemIds}, choice = true }</code>. <em>(1.3)</em> <code>choice</code>: the items are a choice of one (known for some WoW Forever quests).
+<code>items</code> lists every item this quest can reward (fixed or choice).</p>
+<h3 id="32-norgannondbnpcsnpcid">3.2 <code>NorgannonDB.npcs[npcId]</code></h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>name</code>, <code>subName</code></td>
+<td>string</td>
+<td>enUS name and title (e.g. "Weapon Vendor")</td>
+</tr>
+<tr>
+<td><code>minLevel</code>, <code>maxLevel</code></td>
+<td>number</td>
+<td></td>
+</tr>
+<tr>
+<td><code>rank</code></td>
+<td>number</td>
+<td>0 normal, 1 elite, 2 rare elite, 3 boss, 4 rare</td>
+</tr>
+<tr>
+<td><code>factionTemplate</code></td>
+<td>number</td>
+<td>FactionTemplate ID</td>
+</tr>
+<tr>
+<td><code>reaction</code></td>
+<td>"A"/"H"/"AH"/nil</td>
+<td>see §2</td>
+</tr>
+<tr>
+<td><code>flags</code></td>
+<td>mask</td>
+<td>NPC flags (<code>NorgannonDB.enums.npcFlags</code>)</td>
+</tr>
+<tr>
+<td><code>zone</code></td>
+<td>areaId</td>
+<td>zone where it is most common</td>
+</tr>
+<tr>
+<td><code>spawns</code></td>
+<td>SpawnList</td>
+<td></td>
+</tr>
+<tr>
+<td><code>waypoints</code></td>
+<td>WaypointList</td>
+<td>patrol paths</td>
+</tr>
+<tr>
+<td><code>respawn</code></td>
+<td>number</td>
+<td>typical respawn seconds</td>
+</tr>
+<tr>
+<td><code>questStarts</code>, <code>questEnds</code></td>
+<td>{questIds}</td>
+<td></td>
+</tr>
+<tr>
+<td><code>sells</code></td>
+<td><code>{ [itemId] = count }</code></td>
+<td>vendor stock (0 = unlimited/unknown)</td>
+</tr>
+<tr>
+<td><code>drops</code></td>
+<td><code>{ [itemId] = chance }</code></td>
+<td>loot (direct; see also <code>lootTables</code>)</td>
+</tr>
+</tbody>
+</table></div>
+<h3 id="33-norgannondbobjectsobjectid">3.3 <code>NorgannonDB.objects[objectId]</code></h3>
+<p><code>name</code>, <code>zone</code>, <code>spawns</code>, <code>waypoints</code> (transports), <code>factionTemplate</code>, <code>reaction</code>,
+<code>questStarts</code>, <code>questEnds</code>, <code>respawn</code>, <code>drops = { [itemId] = chance }</code>.</p>
+<h3 id="34-norgannondbitemsitemid">3.4 <code>NorgannonDB.items[itemId]</code></h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>name</code></td>
+<td>string</td>
+<td>enUS name</td>
+</tr>
+<tr>
+<td><code>level</code>, <code>requiredLevel</code></td>
+<td>number</td>
+<td>item level, level to use</td>
+</tr>
+<tr>
+<td><code>class</code>, <code>subClass</code></td>
+<td>number</td>
+<td>ItemClass / subclass</td>
+</tr>
+<tr>
+<td><code>flags</code>, <code>foodType</code>, <code>ammoType</code></td>
+<td>number</td>
+<td></td>
+</tr>
+<tr>
+<td><code>startQuest</code></td>
+<td>questId</td>
+<td>quest started by this item</td>
+</tr>
+<tr>
+<td><code>teachesSpell</code></td>
+<td>spellId</td>
+<td></td>
+</tr>
+<tr>
+<td><code>relatedQuests</code></td>
+<td>{questIds}</td>
+<td>quests that involve the item</td>
+</tr>
+<tr>
+<td><code>rewardOf</code></td>
+<td>{questIds}</td>
+<td>quests that reward it</td>
+</tr>
+<tr>
+<td><code>drops</code></td>
+<td><code>{ npcs = {[npcId]=chance}, objects = {[objectId]=chance}, items = {[containerItemId]=chance}, lootTables = {[tableId]=chance} }</code></td>
+<td>where it comes from</td>
+</tr>
+<tr>
+<td><code>vendors</code></td>
+<td><code>{ [npcId] = count }</code></td>
+<td>who sells it (0 = unlimited/unknown)</td>
+</tr>
+</tbody>
+</table></div>
+<p><code>npcs[].drops</code>, <code>objects[].drops</code> and <code>npcs[].sells</code> are the same data indexed the other way.</p>
+<h3 id="35-other-tables">3.5 Other tables</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Table</th>
+<th>Shape</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>lootTables[id]</code></td>
+<td><code>{ npcs = {ids}, objects = {ids} }</code></td>
+<td>shared reference loot tables</td>
+</tr>
+<tr>
+<td><code>areaTriggers[id]</code></td>
+<td><code>{ spawns = SpawnList }</code></td>
+<td>exploration triggers</td>
+</tr>
+<tr>
+<td><code>zones[areaId]</code></td>
+<td><code>{ name, parent, uiMapId, center = {x, y}, extent = {w, h} }</code></td>
+<td><code>parent</code> = parent zone of a subzone; <code>center</code>/<code>extent</code> locate a subzone on its parent's map (percent)</td>
+</tr>
+<tr>
+<td><code>maps.areaToUiMap[areaId]</code>, <code>maps.uiMapToArea[uiMapId]</code></td>
+<td>number</td>
+<td>AreaTable &lt;-&gt; UiMap</td>
+</tr>
+<tr>
+<td><code>maps.instanceToArea[instanceId]</code></td>
+<td>areaId</td>
+<td></td>
+</tr>
+<tr>
+<td><code>dungeons[areaId]</code></td>
+<td><code>{ name, altAreaIds, parent, entrances = { {areaId, x, y} } }</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>instances[key]</code></td>
+<td>see below</td>
+<td><em>(1.3)</em> every dungeon and raid, one record per wing</td>
+</tr>
+<tr>
+<td><code>recipes[spellId]</code></td>
+<td>see below</td>
+<td><em>(1.4)</em> every crafting recipe</td>
+</tr>
+<tr>
+<td><code>index.recipes</code></td>
+<td><code>{ craftedBy = {[itemId] = {spellIds}}, reagentOf = {[itemId] = {spellIds}}, taughtBy = {[recipeItemId] = spellId}, disenchant = {[itemId] = {min, max, quality}} }</code></td>
+<td><em>(1.4)</em> recipes by what they make and use, the recipe a recipe item teaches, and the item levels and qualities (2 uncommon, 3 rare, 4 epic) that disenchant into a material</td>
+</tr>
+<tr>
+<td><code>factionTemplates[id]</code></td>
+<td>number</td>
+<td>reaction code (Questie encoding)</td>
+</tr>
+<tr>
+<td><code>professions[skillId]</code></td>
+<td>string</td>
+<td>enUS skill line name</td>
+</tr>
+<tr>
+<td><code>categories[name]</code></td>
+<td><code>{ npcs = {[id]=value}, objects = {[id]=value} }</code></td>
+<td>tracking lists, see below</td>
+</tr>
+<tr>
+<td><code>enums</code></td>
+<td>table</td>
+<td>named constants: <code>raceMaskById</code>, <code>classKeys</code>, <code>npcFlags</code>, <code>questFlags</code>, <code>specialFlags</code>, <code>factionIDs</code>, <code>zoneIDs</code>, <code>sortKeys</code>, ...</td>
+</tr>
+<tr>
+<td><code>index.objectiveOf.npcs/objects/items[id]</code></td>
+<td>{questIds}</td>
+<td><em>(1.2)</em> quests this NPC, object or item is an objective of (kill credit included)</td>
+</tr>
+<tr>
+<td><code>index.zones[areaId]</code></td>
+<td><code>{ npcs, objects, quests }</code></td>
+<td><em>(1.2)</em> what spawns in the zone, and quests that start there or are sorted there</td>
+</tr>
+<tr>
+<td><code>index.unlocks[questId]</code></td>
+<td>{questIds}</td>
+<td><em>(1.2)</em> quests that list this one as a prerequisite</td>
+</tr>
+<tr>
+<td><code>index.hiddenQuests[questId]</code></td>
+<td><code>true</code> | <code>"map"</code></td>
+<td><em>(1.2)</em> the quests' <code>hidden</code> flags, readable without decoding records</td>
+</tr>
+<tr>
+<td><code>legacy.minimapSize[areaId]</code></td>
+<td><code>{width, height}</code></td>
+<td>Era zone size in yards (unreliable for changed zones)</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>Categories</strong> — <code>value</code> is a required skill (<code>herbs</code>, <code>mines</code>, <code>fish</code>), a level (<code>rares</code>) or a
+reaction code (<code>flight</code>, <code>innkeeper</code>, <code>vendor</code>, <code>repair</code>, <code>banker</code>, <code>auctioneer</code>,
+<code>stablemaster</code>, <code>battlemaster</code>, <code>spirithealer</code>, <code>mailbox</code>, <code>meetingstone</code>, <code>trainer</code>,
+<code>chests</code>).</p>
+<p><strong>Instances</strong> <em>(1.3)</em> — keys such as <code>"deadmines"</code>, <code>"sm-cathedral"</code>, <code>"aq40"</code>. Facts are
+authored once (<code>tools/norgannondb/instances.py</code>); bosses' loot and the quests are found by the build.</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Shape</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>area</code></td>
+<td>areaId</td>
+<td>the instance's area (its name comes from the client, localized); missing for WoW Forever instances not yet seen</td>
+</tr>
+<tr>
+<td><code>name</code></td>
+<td>string</td>
+<td>only when there is no area to name it</td>
+</tr>
+<tr>
+<td><code>group</code>, <code>groupName</code>, <code>wing</code></td>
+<td>string</td>
+<td>wings of one instance share a <code>group</code> (<code>"scarlet-monastery"</code>) and its <code>groupName</code>; <code>wing</code> is <code>"Graveyard"</code>, <code>"Upper"</code>, ...</td>
+</tr>
+<tr>
+<td><code>size</code>, <code>raid</code></td>
+<td>number, <code>true</code></td>
+<td>group size; raids</td>
+</tr>
+<tr>
+<td><code>levels</code></td>
+<td><code>{ min, max }</code></td>
+<td>the recommended level range (the game's group finder ranges)</td>
+</tr>
+<tr>
+<td><code>bossLevels</code></td>
+<td><code>{ min, max }</code></td>
+<td>the bosses' levels (capped at 60)</td>
+</tr>
+<tr>
+<td><code>entrance</code></td>
+<td><code>{ area, x, y }</code></td>
+<td>where the entrance is, on the parent zone's map</td>
+</tr>
+<tr>
+<td><code>keys</code></td>
+<td>{itemIds}</td>
+<td>items that open the way (keys, the Scarlet Key, the Seal of Ascension, ...)</td>
+</tr>
+<tr>
+<td><code>attunement</code></td>
+<td>string</td>
+<td>English text, shown as is</td>
+</tr>
+<tr>
+<td><code>bosses</code></td>
+<td><code>{ { id = npcId, loot = {itemIds} }, ... }</code></td>
+<td>in their usual order; <code>loot</code> is the boss's own loot (gear and recipes few others drop, quest items only it drops), best chance first; the chances are in <code>npcs[id].drops</code></td>
+</tr>
+<tr>
+<td><code>quests</code></td>
+<td>{questIds}</td>
+<td>quests filed under the instance, or about its creatures; for a wing, those about its bosses (or about no wing's)</td>
+</tr>
+<tr>
+<td><code>forever</code></td>
+<td><code>true</code></td>
+<td>an instance WoW Forever added; mostly learned by the Collector</td>
+</tr>
+<tr>
+<td><code>note</code></td>
+<td>string</td>
+<td>an authored remark</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>Recipes</strong> <em>(1.4)</em>, keyed by the recipe's spell id (its localized name is the spell's name):</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Shape</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>skill</code></td>
+<td>skill line id</td>
+<td>the profession (<code>professions[skill]</code> names it)</td>
+</tr>
+<tr>
+<td><code>name</code></td>
+<td>string</td>
+<td>enUS name</td>
+</tr>
+<tr>
+<td><code>levels</code></td>
+<td><code>{ orange, yellow, green, grey }</code></td>
+<td>the skill where it turns each colour (grey: no more skill-ups)</td>
+</tr>
+<tr>
+<td><code>learn</code></td>
+<td>number</td>
+<td>the skill needed to learn it (trainer, or the recipe item's requirement)</td>
+</tr>
+<tr>
+<td><code>item</code>, <code>count</code></td>
+<td>itemId, number</td>
+<td>what it makes, and how many when not 1 (none for enchants)</td>
+</tr>
+<tr>
+<td><code>reagents</code></td>
+<td><code>{ {itemId, count}, ... }</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>trainers</code></td>
+<td><code>{ [npcId] = copper }</code></td>
+<td>trainers who teach it, and their price</td>
+</tr>
+<tr>
+<td><code>items</code></td>
+<td>{itemIds}</td>
+<td>recipe items that teach it (their vendors, drops and quest rewards are in <code>items</code>)</td>
+</tr>
+<tr>
+<td><code>quests</code></td>
+<td>{questIds}</td>
+<td>quests that teach it</td>
+</tr>
+<tr>
+<td><code>auto</code></td>
+<td><code>true</code></td>
+<td>learned with the profession or as the skill rises</td>
+</tr>
+<tr>
+<td><code>forever</code></td>
+<td><code>true</code></td>
+<td>a recipe WoW Forever added (its sources come from the Collector)</td>
+</tr>
+</tbody>
+</table></div>
+<p>The recipe list and skill ranges are WoW Forever's own (its client's SkillLineAbility and
+SpellEffect): recipes it retired are left out (the Alchemy healing potions, now First Aid's), and
+the recipes it added are in, with <code>forever = true</code>. A recipe added without reagents in the tables
+read takes the reagents of the classic recipe making the same item. Recipes with no known source
+and an unknown product are left out.</p>
+<p><strong>Drop chances</strong> <em>(1.3)</em>: where a creature's drop of an item had an unknown chance (0) and the
+creature rolls a reference loot table holding the item, the table's chance fills it in; a chance
+of 0 inside a table is an equal share of what its listed chances leave (cmangos's rule).</p>
+<h2 id="4-localization-norgannondblocaleslocale">4. Localization — <code>NorgannonDB.locales[locale]</code></h2>
+<p>Only the client's locale is loaded. enUS lives in the base records.</p>
+<div class="hl"><pre><span></span><code><span class="nv">locales</span><span class="p">.</span><span class="py">deDE</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="nv">quests</span><span class="w">  </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">[</span><span class="nv">id</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nv">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;...&quot;</span><span class="p">,</span><span class="w"> </span><span class="nv">objectives</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="nv">lines</span><span class="p">},</span><span class="w"> </span><span class="nv">description</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;...&quot;</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">},</span>
+<span class="w">  </span><span class="nv">npcs</span><span class="w">    </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">[</span><span class="nv">id</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nv">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;...&quot;</span><span class="p">,</span><span class="w"> </span><span class="nv">subName</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;...&quot;</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">},</span>
+<span class="w">  </span><span class="nv">objects</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">[</span><span class="nv">id</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;name&quot;</span><span class="w"> </span><span class="p">},</span><span class="w">  </span><span class="nv">items</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">[</span><span class="nv">id</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;name&quot;</span><span class="w"> </span><span class="p">},</span>
+<span class="w">  </span><span class="nv">zones</span><span class="w">   </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">[</span><span class="nv">id</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;name&quot;</span><span class="w"> </span><span class="p">},</span><span class="w">  </span><span class="nv">professions</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">[</span><span class="nv">id</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;name&quot;</span><span class="w"> </span><span class="p">},</span>
+<span class="p">}</span>
+</code></pre></div>
+
+<p><code>NorgannonDB:L(kind, id, field)</code> returns the localized value with enUS fallback.</p>
+<h2 id="5-player-dependent-variants">5. Player-dependent variants</h2>
+<p>A few corrections depend on the player (for example a quest with a different starter for
+Horde). The base records are the Alliance/Warrior view. <code>NorgannonDB.variants</code> holds field
+overrides:</p>
+<div class="hl"><pre><span></span><code><span class="nv">variants</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="nv">base</span><span class="w">    </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nv">faction</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;Alliance&quot;</span><span class="p">,</span><span class="w"> </span><span class="nv">class</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;WARRIOR&quot;</span><span class="w"> </span><span class="p">},</span>
+<span class="w">  </span><span class="nv">faction</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nv">Horde</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nv">quests</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">[</span><span class="nv">id</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nv">field</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">value</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="nv">NorgannonDB</span><span class="p">.</span><span class="py">REMOVED</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="nv">npcs</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">...</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">},</span>
+<span class="w">  </span><span class="nv">class</span><span class="w">   </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nv">MAGE</span><span class="w">  </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nv">quests</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">...</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">},</span>
+<span class="p">}</span>
+</code></pre></div>
+
+<p>At load NorgannonDB applies the player's overrides to the base records (<code>NorgannonDB.appliedVariants</code>
+says which). Addons that need the neutral data call <code>NorgannonDB:GetVariantOverrides(axis, value)</code>.</p>
+<h2 id="6-corrections-runtime-additions">6. Corrections (runtime additions)</h2>
+<p>Addons and data collectors may add or fix records without editing data files:</p>
+<div class="hl"><pre><span></span><code><span class="nv">NorgannonDB</span><span class="p">:</span><span class="nf">RegisterCorrection</span><span class="p">(</span><span class="s2">&quot;MyAddon&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;npcs&quot;</span><span class="p">,</span><span class="w"> </span><span class="mi">1234</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nv">spawns</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">[</span><span class="mi">12</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">{</span><span class="mf">40.1</span><span class="p">,</span><span class="w"> </span><span class="mf">52.3</span><span class="p">}</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">})</span>
+<span class="nv">NorgannonDB</span><span class="p">:</span><span class="nf">RegisterCallback</span><span class="p">(</span><span class="s2">&quot;CORRECTION_APPLIED&quot;</span><span class="p">,</span><span class="w"> </span><span class="kr">function</span><span class="p">(</span><span class="nv">kind</span><span class="p">,</span><span class="w"> </span><span class="nv">id</span><span class="p">,</span><span class="w"> </span><span class="nv">owner</span><span class="p">)</span><span class="w"> </span><span class="p">...</span><span class="w"> </span><span class="kr">end</span><span class="p">)</span>
+</code></pre></div>
+
+<p>Corrections merge field by field (a field is replaced, never deep-merged).
+<code>NorgannonDB:GetProvenance(kind, id)</code> reports where a record came from: <code>"questie"</code>,
+<code>"pfquest"</code>, <code>"questie+pfquest"</code>, <code>"collector"</code> (only players have seen it), or the owner of the
+last correction.</p>
+<h2 id="7-sources-and-precedence">7. Sources and precedence</h2>
+<p>The data is compiled offline by <code>tools/norgannondb/build.py</code>:</p>
+<ol>
+<li><strong>QuestieDB</strong> (GPL-3.0), loaded through its own code so all of its corrections apply. It
+   is the source of truth: any field it provides wins.</li>
+<li><strong>pfQuest</strong> (MIT) fills fields QuestieDB lacks: drop chances, respawn timers,
+   reference loot tables, area triggers, tracking categories, quest descriptions, vendor stock
+   counts. pfQuest coordinates are projected into the target client's map frame first.</li>
+<li>If QuestieDB lists an item's drop or vendor sources, that list is authoritative and pfQuest
+   only adds chances. pfQuest's lists are used only where QuestieDB has none.</li>
+<li>Entities only pfQuest knows are kept and marked <code>"pfquest"</code> in provenance. Consumers decide
+   whether to trust them (the pfQuest adapter skips pfQuest-only quests).</li>
+<li><strong>NorgannonDB Collector</strong> findings from real play are added last. They add to a record and never
+   remove from it, and changing something QuestieDB provides takes repeated sightings.</li>
+</ol>
+<p>Because it includes QuestieDB data, the compiled database is distributed under <strong>GPL-3.0</strong>.</p>
+<p>A JSON export with the same structure (string keys) is written to <code>dist/json/</code> for
+non-Lua tools.</p></article></div>
+</main>
+<footer class="foot">
+  <div class="foot-inner">
+    <div class="foot-brand">
+      <a class="brand" href="../index.html"><img src="../img/marks/core-64.png" alt="" width="34" height="34"><span>Norgannon</span></a>
+      <p>Add-ons made for WoW Forever. Free, and better every time someone plays.</p>
+    </div>
+    <div class="foot-col">
+      <h4>Add-ons</h4>
+      <a href="../addons.html#world">Out in the world</a>
+      <a href="../addons.html#group">In a group</a>
+      <a href="../addons.html#account">Your account</a>
+      <a href="../addons.html#guild">Your guild</a>
+      <a href="../addons.html#install">How to install</a>
+    </div>
+    <div class="foot-col">
+      <h4>Community</h4>
+      <a href="../improve.html">Help improve it</a>
+      <a href="../index.html#faq">Questions</a>
+      <a href="https://github.com/zmarotrix">GitHub</a>
+    </div>
+    <div class="foot-col">
+      <h4>Developers</h4>
+      <a href="../developers/index.html">Build on Norgannon</a>
+      <a href="../developers/getting-started.html">Getting started</a>
+      <a href="../api/index.html">Forever API reference</a>
+    </div>
+  </div>
+  <div class="foot-fine">
+    <p>Made by <b>Maro</b>. Quest, creature, object and item data from <a href="https://github.com/Questie/Questie">Questie and QuestieDB</a>
+      (GPL-3.0) and <a href="https://github.com/shagu/pfQuest">pfQuest</a> by Shagu (MIT). Dungeon data from DungeonJournal by
+      Exehn, used with permission. Fonts: Marcellus and Alegreya Sans (SIL Open Font License).</p>
+    <p>Not affiliated with Blizzard Entertainment or the WoW Forever team. World of Warcraft is a trademark of Blizzard
+      Entertainment.</p>
+  </div>
+</footer>
+<script>
+(function () {
+  var b = document.getElementById("menu"), n = document.getElementById("nav"), top = document.getElementById("top");
+  b.addEventListener("click", function () {
+    var open = n.classList.toggle("open");
+    b.setAttribute("aria-expanded", open ? "true" : "false");
+  });
+  var onScroll = function () { top.classList.toggle("scrolled", window.scrollY > 8); };
+  window.addEventListener("scroll", onScroll, { passive: true });
+  onScroll();
+  // sections fade up as they come into view (everything is visible without script or with reduced motion)
+  if ("IntersectionObserver" in window && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    var els = document.querySelectorAll(".section-head, .pillar, .feature, .showcase, .steps-row li, .faq, .cta, .bigstats, .privacy > div, .split > div, .credits");
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add("shown"); io.unobserve(e.target); } });
+    }, { rootMargin: "0px 0px -8% 0px" });
+    var vh = window.innerHeight;
+    els.forEach(function (el) {
+      if (el.getBoundingClientRect().top < vh) return;   // already on screen (or jumped to): show it as it is
+      el.classList.add("reveal", "pending"); io.observe(el);
+    });
+  }
+})();
+</script>
+</body>
+</html>

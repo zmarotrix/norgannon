@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Overview · Norgannon developers</title>
+<meta name="description" content="How to build WoW Forever add-ons on Norgannon Core.">
+<meta name="theme-color" content="#0b0907">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Overview · Norgannon developers">
+<meta property="og:description" content="How to build WoW Forever add-ons on Norgannon Core.">
+<meta property="og:image" content="../img/social-card.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" type="image/png" sizes="32x32" href="../img/marks/core-32.png">
+<link rel="apple-touch-icon" href="../img/marks/core-256.png">
+<link rel="preload" href="../fonts/Marcellus-Regular.ttf" as="font" type="font/ttf" crossorigin>
+<link rel="stylesheet" href="../style.css">
+</head>
+<body class="">
+<a class="skip" href="#main">Skip to content</a>
+<header class="top" id="top">
+  <div class="top-inner">
+    <a class="brand" href="../index.html"><img src="../img/marks/core-64.png" alt="" width="34" height="34"><span>Norgannon</span></a>
+    <nav class="nav" id="nav" aria-label="Main">
+      <a href="../index.html">Home</a>
+      <a href="../addons.html">Add-ons</a>
+      <a href="../improve.html">Help improve it</a>
+      <a href="../index.html#faq">FAQ</a>
+      <a href="../developers/index.html" class="on" aria-current="page">For developers</a>
+    </nav>
+    <a class="btn small nav-cta" href="../addons.html">Get the add-ons</a>
+    <button class="menu" id="menu" aria-label="Menu" aria-expanded="false" aria-controls="nav">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</header>
+<main id="main">
+<div class="wrap doc"><aside class="toc"><div class="docs-nav"><p class="toc-title">Developers</p><a href="index.html" class="on">Overview</a><a href="getting-started.html">Getting started</a><a href="forever-rules.html">What the client allows</a><a href="core-api.html">Core API</a><a href="database-spec.html">Database specification</a></div><div class="on-page"><p class="toc-title">On this page</p><a href="#the-forever-problems-it-solves">The Forever problems it solves</a><a href="#everything-else-the-core-gives-you">Everything else the Core gives you</a><a href="#reading-the-game-data">Reading the game data</a><a href="#where-to-start">Where to start</a><a href="#versions">Versions</a><a href="#the-licence-today">The licence, today</a></div></aside><article class="prose"><h1 id="build-forever-add-ons-without-solving-the-hard-parts-again">Build Forever add-ons without solving the hard parts again</h1>
+<p>Norgannon Core (version 1.26.1, folder <code>NorgannonDB_Core</code>) is the runtime every Norgannon add-on is built on. It
+solves the parts of writing for WoW Forever that every add-on runs into, so yours can be mostly the thing it's for,
+and look and behave like part of the family from the first build.</p>
+<h2 id="the-forever-problems-it-solves">The Forever problems it solves</h2>
+<p>WoW Forever runs classic content on a modern client, with modern restrictions. These are the walls add-on authors
+hit first, and the Core call for each one.</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>The problem</th>
+<th>What the Core gives you</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Classic functions are gone: <code>GetSpellInfo</code>, <code>GetItemInfo</code>, <code>GetContainerItemInfo</code>, <code>UnitAura</code>, the old quest log calls and dozens more.</td>
+<td><strong><code>Core.Compat</code></strong>: 60 of them, with their classic answers, through the client's new calls. No globals are written, so other add-ons are left alone.</td>
+</tr>
+<tr>
+<td>Version checks misread the client, so libraries take the wrong path.</td>
+<td><strong><code>Core.Client</code></strong>: <code>IsForever()</code>, <code>Flavor()</code> and <code>IsClassicWorld()</code>, from the interface number.</td>
+</tr>
+<tr>
+<td>Health is always secret, and about 90 values turn secret in combat, so comparing or doing maths on them throws an error.</td>
+<td><strong><code>Core.Secret</code></strong> and <strong><code>UI.UnitBar</code></strong>: bars, text, colours and fades that let the client handle the secret value, so your code never has to read it.</td>
+</tr>
+<tr>
+<td>Auras can't be read in combat.</td>
+<td><strong><code>UI.UnitAuras</code></strong>: a unit's buffs and debuffs, drawn by the game inside a frame of yours, in combat too.</td>
+</tr>
+<tr>
+<td>Characters have first and last names, so whispers to the name an event gave you can fail.</td>
+<td><strong><code>Core.Names</code></strong>: the full name a whisper reaches, learned from chat, the guild roster and add-on messages.</td>
+</tr>
+<tr>
+<td>Add-on messages are blocked during chat lockdown, and chat lines from add-ons may not reach chat in instances.</td>
+<td><strong><code>Core.Net</code></strong>: messages wait for the lockdown to end, then go. <strong><code>Core:Say</code></strong>: when a line won't post, the chat box opens with it ready to send.</td>
+</tr>
+<tr>
+<td>Protected calls fail in combat.</td>
+<td><strong><code>Core:AfterCombat</code></strong> queues them, and <strong><code>Core:Restricted</code></strong> tells you which restriction is on and when it changes.</td>
+</tr>
+</tbody>
+</table></div>
+<h2 id="everything-else-the-core-gives-you">Everything else the Core gives you</h2>
+<ul>
+<li><strong>One call to start.</strong> <code>Core:NewAddon</code> gives you the version check, saved variables with defaults and migrations,
+  a slash command with <code>help</code>, a settings page, and a row in the Norgannon minimap list and the game's add-on menu.</li>
+<li><strong>The family look.</strong> Windows, lists, settings rows, buttons, inputs and colours that match every Norgannon add-on,
+  with fonts that cover nine languages.</li>
+<li><strong>A safe way to call the game.</strong> WoW Forever's client hides some values and forbids some calls, more than Classic
+  did. The Core's helpers turn errors and secret values into <code>nil</code> instead of breaking your add-on.</li>
+<li><strong>The map.</strong> Pins on the world map and the minimap, a compass across the top of the screen and a waypoint arrow,
+  shared by every add-on, so they never fight over the same pins.</li>
+<li><strong>The game data, if you want it.</strong> Searches by name, quest and loot helpers over <a href="#reading-the-game-data">NorgannonDB</a>.
+  The Core runs without NorgannonDB, so add-ons that don't need the data don't pay for it.</li>
+<li><strong>Events and messages.</strong> Game events through one shared frame, and a message bus between add-ons.</li>
+</ul>
+<h2 id="reading-the-game-data">Reading the game data</h2>
+<p>NorgannonDB, the game data, is an ordinary add-on with a written format, the
+<a href="database-spec.html">database specification</a>. You don't need the Core to read it:</p>
+<div class="hl"><pre><span></span><code><span class="c1">-- TOC:  ## OptionalDeps: NorgannonDB   (or ## Dependencies: NorgannonDB)</span>
+<span class="kd">local</span><span class="w"> </span><span class="nv">DB</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">NorgannonDB</span>
+<span class="kr">if</span><span class="w"> </span><span class="ow">not</span><span class="w"> </span><span class="nv">DB</span><span class="w"> </span><span class="ow">or</span><span class="w"> </span><span class="ow">not</span><span class="w"> </span><span class="nv">DB</span><span class="p">:</span><span class="nf">RequireSchema</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">4</span><span class="p">)</span><span class="w"> </span><span class="kr">then</span><span class="w"> </span><span class="kr">return</span><span class="w"> </span><span class="kr">end</span>
+
+<span class="kd">local</span><span class="w"> </span><span class="nv">quest</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">DB</span><span class="p">:</span><span class="nf">Get</span><span class="p">(</span><span class="s2">&quot;quests&quot;</span><span class="p">,</span><span class="w"> </span><span class="mi">783</span><span class="p">)</span><span class="w">      </span><span class="c1">-- A Threat Within</span>
+<span class="nb">print</span><span class="p">(</span><span class="nv">quest</span><span class="p">.</span><span class="py">name</span><span class="p">,</span><span class="w"> </span><span class="nv">quest</span><span class="p">.</span><span class="py">level</span><span class="p">)</span>
+</code></pre></div>
+
+<p>Field names and meanings are stable within a major schema version, and new data only ever adds. NorgannonDB is free
+software under the GPL-3.0, because it contains data from QuestieDB. If you copy its data into your own add-on, that
+data stays under the GPL. Found something wrong or missing? <a href="../improve.html">Players can help fix it</a>, and so can you
+on <a href="https://github.com/zmarotrix/NorgannonDB/issues">NorgannonDB's GitHub page</a>.</p>
+<h2 id="where-to-start">Where to start</h2>
+<ol>
+<li><strong><a href="getting-started.html">Getting started</a></strong>: a working add-on in two files, and the rules Norgannon's own add-ons
+   follow.</li>
+<li><strong><a href="forever-rules.html">What the client allows</a></strong>: what WoW Forever's client forbids, which values are secret, and
+   how to work with them. Read this before you trust anything you know from retail or Classic.</li>
+<li><strong><a href="core-api.html">Core API</a></strong>: every function the Core promises to keep. Anything not listed there is internal.</li>
+<li><strong><a href="database-spec.html">Database specification</a></strong>: NorgannonDB's tables and fields, if you read the game data.</li>
+<li><strong><a href="../api/index.html">The Forever API reference</a></strong>: the client's own functions, events and widgets, as recorded
+   in the game by a probe add-on rather than guessed from other clients. It includes a table of where each classic
+   function went, and definitions for VS Code's Lua extension that flag calls that go secret in combat, are forbidden
+   or are protected.</li>
+</ol>
+<p><a href="NorgannonTemplate.zip">NorgannonTemplate</a> is a small, complete add-on to copy from. Norgannon's tests load it on every
+build, so it always works with the current Core.</p>
+<h2 id="versions">Versions</h2>
+<p>An add-on asks for the Core version it was written for: <code>api = { 1, 20 }</code> means "written for Core 1.20". It runs on
+any later 1.x, because a minor version only ever adds. A new major version may change things, and the Core says so
+in chat rather than failing quietly.</p>
+<h2 id="the-licence-today">The licence, today</h2>
+<div class="note"><b>Read before you ship.</b> NorgannonDB, the game data, is free software under the GPL-3.0. The
+Core's code is currently <b>All Rights Reserved</b>. The plan is to release it under an open licence before it's
+published for general use. Until then, ask before you release an add-on that depends on it.</div></article></div>
+</main>
+<footer class="foot">
+  <div class="foot-inner">
+    <div class="foot-brand">
+      <a class="brand" href="../index.html"><img src="../img/marks/core-64.png" alt="" width="34" height="34"><span>Norgannon</span></a>
+      <p>Add-ons made for WoW Forever. Free, and better every time someone plays.</p>
+    </div>
+    <div class="foot-col">
+      <h4>Add-ons</h4>
+      <a href="../addons.html#world">Out in the world</a>
+      <a href="../addons.html#group">In a group</a>
+      <a href="../addons.html#account">Your account</a>
+      <a href="../addons.html#guild">Your guild</a>
+      <a href="../addons.html#install">How to install</a>
+    </div>
+    <div class="foot-col">
+      <h4>Community</h4>
+      <a href="../improve.html">Help improve it</a>
+      <a href="../index.html#faq">Questions</a>
+      <a href="https://github.com/zmarotrix">GitHub</a>
+    </div>
+    <div class="foot-col">
+      <h4>Developers</h4>
+      <a href="../developers/index.html">Build on Norgannon</a>
+      <a href="../developers/getting-started.html">Getting started</a>
+      <a href="../api/index.html">Forever API reference</a>
+    </div>
+  </div>
+  <div class="foot-fine">
+    <p>Made by <b>Maro</b>. Quest, creature, object and item data from <a href="https://github.com/Questie/Questie">Questie and QuestieDB</a>
+      (GPL-3.0) and <a href="https://github.com/shagu/pfQuest">pfQuest</a> by Shagu (MIT). Dungeon data from DungeonJournal by
+      Exehn, used with permission. Fonts: Marcellus and Alegreya Sans (SIL Open Font License).</p>
+    <p>Not affiliated with Blizzard Entertainment or the WoW Forever team. World of Warcraft is a trademark of Blizzard
+      Entertainment.</p>
+  </div>
+</footer>
+<script>
+(function () {
+  var b = document.getElementById("menu"), n = document.getElementById("nav"), top = document.getElementById("top");
+  b.addEventListener("click", function () {
+    var open = n.classList.toggle("open");
+    b.setAttribute("aria-expanded", open ? "true" : "false");
+  });
+  var onScroll = function () { top.classList.toggle("scrolled", window.scrollY > 8); };
+  window.addEventListener("scroll", onScroll, { passive: true });
+  onScroll();
+  // sections fade up as they come into view (everything is visible without script or with reduced motion)
+  if ("IntersectionObserver" in window && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    var els = document.querySelectorAll(".section-head, .pillar, .feature, .showcase, .steps-row li, .faq, .cta, .bigstats, .privacy > div, .split > div, .credits");
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add("shown"); io.unobserve(e.target); } });
+    }, { rootMargin: "0px 0px -8% 0px" });
+    var vh = window.innerHeight;
+    els.forEach(function (el) {
+      if (el.getBoundingClientRect().top < vh) return;   // already on screen (or jumped to): show it as it is
+      el.classList.add("reveal", "pending"); io.observe(el);
+    });
+  }
+})();
+</script>
+</body>
+</html>

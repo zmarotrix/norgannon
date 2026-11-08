@@ -1,0 +1,217 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Getting started · Norgannon developers</title>
+<meta name="description" content="How to build WoW Forever add-ons on Norgannon Core.">
+<meta name="theme-color" content="#0b0907">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Getting started · Norgannon developers">
+<meta property="og:description" content="How to build WoW Forever add-ons on Norgannon Core.">
+<meta property="og:image" content="../img/social-card.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" type="image/png" sizes="32x32" href="../img/marks/core-32.png">
+<link rel="apple-touch-icon" href="../img/marks/core-256.png">
+<link rel="preload" href="../fonts/Marcellus-Regular.ttf" as="font" type="font/ttf" crossorigin>
+<link rel="stylesheet" href="../style.css">
+</head>
+<body class="">
+<a class="skip" href="#main">Skip to content</a>
+<header class="top" id="top">
+  <div class="top-inner">
+    <a class="brand" href="../index.html"><img src="../img/marks/core-64.png" alt="" width="34" height="34"><span>Norgannon</span></a>
+    <nav class="nav" id="nav" aria-label="Main">
+      <a href="../index.html">Home</a>
+      <a href="../addons.html">Add-ons</a>
+      <a href="../improve.html">Help improve it</a>
+      <a href="../index.html#faq">FAQ</a>
+      <a href="../developers/index.html" class="on" aria-current="page">For developers</a>
+    </nav>
+    <a class="btn small nav-cta" href="../addons.html">Get the add-ons</a>
+    <button class="menu" id="menu" aria-label="Menu" aria-expanded="false" aria-controls="nav">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</header>
+<main id="main">
+<div class="wrap doc"><aside class="toc"><div class="docs-nav"><p class="toc-title">Developers</p><a href="index.html">Overview</a><a href="getting-started.html" class="on">Getting started</a><a href="forever-rules.html">What the client allows</a><a href="core-api.html">Core API</a><a href="database-spec.html">Database specification</a></div><div class="on-page"><p class="toc-title">On this page</p><a href="#the-forever-toolkit-problems-core-solves-for-you">The Forever toolkit: problems Core solves for you</a><a href="#the-toc">The TOC</a><a href="#corelua">core.lua</a><a href="#versions">Versions</a><a href="#rules">Rules</a></div></aside><article class="prose"><h1 id="building-an-add-on-on-norgannondb-core">Building an add-on on NorgannonDB Core</h1>
+<p>The API is in <a href="core-api.html"><code>../core-api.md</code></a>, and what the Forever client allows is in
+<a href="forever-rules.html"><code>forever-rules.md</code></a>. <a href="NorgannonTemplate.zip">NorgannonTemplate</a> is a small, complete example that
+the suite's tests keep working.</p>
+<h2 id="the-forever-toolkit-problems-core-solves-for-you">The Forever toolkit: problems Core solves for you</h2>
+<p>WoW Forever runs Classic content on the modern client, and that trips add-ons in ways Classic authors don't expect.
+These are the ones Core handles; <code>forever-rules.md</code> has the evidence.</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>On Forever...</th>
+<th>Use</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>GetSpellInfo</code>, <code>GetItemInfo</code>, <code>GetContainerItemInfo</code> and dozens more classic functions don't exist</td>
+<td><code>Core.Compat.GetSpellInfo(...)</code> and the rest: the classic answers, no globals written</td>
+</tr>
+<tr>
+<td><code>WOW_PROJECT_ID</code> is 18 (<code>WOW_PROJECT_CAMELOT</code>), neither Classic nor Retail</td>
+<td><code>Core.Client.IsForever()</code>, <code>Core.Client.Flavor()</code>, <code>Core.Client.IsClassicWorld()</code></td>
+</tr>
+<tr>
+<td>health is always secret, and in combat so are cooldowns, charges, stats and threat</td>
+<td><code>UI.UnitBar</code> for health and power; <code>Core.Secret</code> for curves, text, show-if and colours</td>
+</tr>
+<tr>
+<td>add-ons can't read auras in combat (the call errors)</td>
+<td><code>UI.UnitAuras(parent, unit)</code>: the game draws them in your frame</td>
+</tr>
+<tr>
+<td>protected frames can't change in combat</td>
+<td><code>Core:AfterCombat(fn, key)</code></td>
+</tr>
+<tr>
+<td>"are we in combat?" from the restriction API reads false in open-world combat</td>
+<td><code>Core:Restricted("combat" \| "fight" \| "send")</code> and the message <code>NORGANNON_RESTRICTIONS_CHANGED</code></td>
+</tr>
+<tr>
+<td>characters have first and last names; a whisper to a first name fails</td>
+<td><code>Core.Names.First(name)</code> to tell who someone is, <code>Core.Names:Address(nameOrUnit)</code> to reach them</td>
+</tr>
+<tr>
+<td>add-on messages are lost if sent during chat lockdown</td>
+<td><code>Core.Net:Channel(prefix, { onMessage })</code>: held and sent when it lifts, compressed, refusal detected</td>
+</tr>
+<tr>
+<td>a chat line from an add-on may not arrive (in instances especially)</td>
+<td><code>Core:Say(text, kind)</code>: sends it, and if it never shows, opens the chat box with it ready</td>
+</tr>
+<tr>
+<td>the player's map position needs Forever's Classic map hierarchy</td>
+<td><code>Core.Player:GetPosition()</code> (nil where the game gives none, such as instances), and Core's map pins</td>
+</tr>
+<tr>
+<td>testing combat behaviour needs the game</td>
+<td><code>tools/harness/secrets.lua</code>: secrets and combat lockdown in the stub client</td>
+</tr>
+</tbody>
+</table></div>
+<h2 id="the-toc">The TOC</h2>
+<div class="hl"><pre><span></span><code>## Interface: 16001
+## Title: |cff9fd0ffLantern|r
+## Category: NorgannonDB
+## Version: 0.1.0
+## Dependencies: NorgannonDB_Core
+## SavedVariables: LanternDB
+## AddonCompartmentFunc: Lantern_OnAddonCompartmentClick
+## AddonCompartmentFuncOnEnter: Lantern_OnAddonCompartmentEnter
+## AddonCompartmentFuncOnLeave: Lantern_OnAddonCompartmentLeave
+</code></pre></div>
+
+<p>List <code>NorgannonDB</code> in Dependencies only if you read the game data (<code>Core.DB</code>, <code>Core.Map</code> or <code>NorgannonDB</code>). It's
+52 MB on disk and about 33 MB of game memory, and Core runs without it.</p>
+<h2 id="corelua">core.lua</h2>
+<div class="hl"><pre><span></span><code><span class="kd">local</span><span class="w"> </span><span class="nv">ADDON</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">...</span>
+<span class="kd">local</span><span class="w"> </span><span class="nv">Core</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">NorgannonCore</span>
+<span class="kr">if</span><span class="w"> </span><span class="ow">not</span><span class="w"> </span><span class="p">(</span><span class="nv">Core</span><span class="w"> </span><span class="ow">and</span><span class="w"> </span><span class="nv">Core</span><span class="p">.</span><span class="py">NewAddon</span><span class="p">)</span><span class="w"> </span><span class="kr">then</span><span class="w"> </span><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Lantern needs NorgannonDB Core 1.20 or newer.&quot;</span><span class="p">)</span><span class="w"> </span><span class="kr">return</span><span class="w"> </span><span class="kr">end</span>
+
+<span class="kd">local</span><span class="w"> </span><span class="nv">A</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">Core</span><span class="p">:</span><span class="nf">NewAddon</span><span class="p">(</span><span class="s2">&quot;lantern&quot;</span><span class="p">,</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="nv">folder</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">ADDON</span><span class="p">,</span><span class="w"> </span><span class="nv">api</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">20</span><span class="w"> </span><span class="p">},</span>
+<span class="w">  </span><span class="nv">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;Lantern&quot;</span><span class="p">,</span><span class="w"> </span><span class="nv">accent</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;9fd0ff&quot;</span><span class="p">,</span><span class="w"> </span><span class="nv">role</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;Lights the way&quot;</span><span class="p">,</span><span class="w">   </span><span class="c1">-- only for add-ons outside the suite&#39;s registry</span>
+<span class="w">  </span><span class="nv">db</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;LanternDB&quot;</span><span class="p">,</span><span class="w"> </span><span class="nv">version</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="nv">defaults</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nv">shown</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span><span class="w"> </span><span class="p">},</span>
+<span class="w">  </span><span class="nv">slash</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s2">&quot;/lantern&quot;</span><span class="w"> </span><span class="p">},</span>
+<span class="w">  </span><span class="nv">commands</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nv">reset</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="kr">function</span><span class="p">()</span><span class="w"> </span><span class="nv">A</span><span class="p">.</span><span class="py">Window</span><span class="p">:</span><span class="nf">ResetPosition</span><span class="p">()</span><span class="w"> </span><span class="kr">end</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;put the window back&quot;</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">},</span>
+<span class="p">})</span>
+<span class="kr">if</span><span class="w"> </span><span class="nv">A</span><span class="p">.</span><span class="py">disabled</span><span class="w"> </span><span class="kr">then</span><span class="w"> </span><span class="kr">return</span><span class="w"> </span><span class="kr">end</span>
+
+<span class="kr">function</span><span class="w"> </span><span class="nc">A</span><span class="p">:</span><span class="nf">Toggle</span><span class="p">()</span><span class="w"> </span><span class="nv">A</span><span class="p">.</span><span class="py">Window</span><span class="p">:</span><span class="nf">Toggle</span><span class="p">()</span><span class="w"> </span><span class="kr">end</span><span class="w">   </span><span class="c1">-- left-click and /lantern alone</span>
+</code></pre></div>
+
+<p>That gives you:
+- the version check, with one line in chat if this Core can't serve you
+- <code>A.db</code> with your defaults, plus <code>version</code> and <code>migrate</code> for changes later
+- <code>A:Print</code>, and <code>A:Send</code>/<code>A:Listen</code> on Core's message bus
+- the slash command with <code>help</code>
+- a row in the Norgannon minimap flyout and the game's add-on menu: left-click runs <code>A:Toggle()</code>, right-click opens
+  settings
+- <code>A:AddSettingsPage(frame)</code> and <code>A:OpenSettings()</code>, which waits for the fight to end in combat</p>
+<p>Other files start with <code>local A = Lantern; if not A or A.disabled then return end</code>.</p>
+<h2 id="versions">Versions</h2>
+<p><code>api = { 1, 20 }</code> means "written for Core 1.20". It runs on any later 1.x: a minor version only adds. A new major
+version may change things.</p>
+<h2 id="rules">Rules</h2>
+<ul>
+<li>Events go through <code>Core:On(event, owner, fn)</code>.</li>
+<li>Call the game through <code>Core.Global</code>, <code>Core.In</code> and <code>Core.Plain</code>, which turn errors and secret values into nil.</li>
+<li>Classic functions the client no longer has (<code>GetSpellInfo</code>, <code>GetItemInfo</code>, <code>GetContainerItemInfo</code> and more) are in
+  <code>Core.Compat</code>, with their classic return values. <code>Core.Client.IsForever()</code> tells Forever apart, whatever
+  <code>WOW_PROJECT_ID</code> says.</li>
+<li>Hand values that may be secret straight to widgets with <code>Core.SetSecret</code>, or use <code>UI.UnitBar</code>, <code>Core.Secret</code> and
+  <code>UI.UnitAuras</code>, which do it for health, text, show-if and auras in combat.</li>
+<li>Protected frames are touched only out of combat (<code>Core:AfterCombat</code>).</li>
+<li>Use Core's colours (<code>UI.C</code>, <code>UI.Accent</code>) and widgets (<code>UI.Window</code>, <code>UI.ActionList</code>, <code>UI.SettingsList</code>), not your
+  own.</li>
+<li>Player-facing text says "add-on".</li>
+</ul></article></div>
+</main>
+<footer class="foot">
+  <div class="foot-inner">
+    <div class="foot-brand">
+      <a class="brand" href="../index.html"><img src="../img/marks/core-64.png" alt="" width="34" height="34"><span>Norgannon</span></a>
+      <p>Add-ons made for WoW Forever. Free, and better every time someone plays.</p>
+    </div>
+    <div class="foot-col">
+      <h4>Add-ons</h4>
+      <a href="../addons.html#world">Out in the world</a>
+      <a href="../addons.html#group">In a group</a>
+      <a href="../addons.html#account">Your account</a>
+      <a href="../addons.html#guild">Your guild</a>
+      <a href="../addons.html#install">How to install</a>
+    </div>
+    <div class="foot-col">
+      <h4>Community</h4>
+      <a href="../improve.html">Help improve it</a>
+      <a href="../index.html#faq">Questions</a>
+      <a href="https://github.com/zmarotrix">GitHub</a>
+    </div>
+    <div class="foot-col">
+      <h4>Developers</h4>
+      <a href="../developers/index.html">Build on Norgannon</a>
+      <a href="../developers/getting-started.html">Getting started</a>
+      <a href="../api/index.html">Forever API reference</a>
+    </div>
+  </div>
+  <div class="foot-fine">
+    <p>Made by <b>Maro</b>. Quest, creature, object and item data from <a href="https://github.com/Questie/Questie">Questie and QuestieDB</a>
+      (GPL-3.0) and <a href="https://github.com/shagu/pfQuest">pfQuest</a> by Shagu (MIT). Dungeon data from DungeonJournal by
+      Exehn, used with permission. Fonts: Marcellus and Alegreya Sans (SIL Open Font License).</p>
+    <p>Not affiliated with Blizzard Entertainment or the WoW Forever team. World of Warcraft is a trademark of Blizzard
+      Entertainment.</p>
+  </div>
+</footer>
+<script>
+(function () {
+  var b = document.getElementById("menu"), n = document.getElementById("nav"), top = document.getElementById("top");
+  b.addEventListener("click", function () {
+    var open = n.classList.toggle("open");
+    b.setAttribute("aria-expanded", open ? "true" : "false");
+  });
+  var onScroll = function () { top.classList.toggle("scrolled", window.scrollY > 8); };
+  window.addEventListener("scroll", onScroll, { passive: true });
+  onScroll();
+  // sections fade up as they come into view (everything is visible without script or with reduced motion)
+  if ("IntersectionObserver" in window && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    var els = document.querySelectorAll(".section-head, .pillar, .feature, .showcase, .steps-row li, .faq, .cta, .bigstats, .privacy > div, .split > div, .credits");
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add("shown"); io.unobserve(e.target); } });
+    }, { rootMargin: "0px 0px -8% 0px" });
+    var vh = window.innerHeight;
+    els.forEach(function (el) {
+      if (el.getBoundingClientRect().top < vh) return;   // already on screen (or jumped to): show it as it is
+      el.classList.add("reveal", "pending"); io.observe(el);
+    });
+  }
+})();
+</script>
+</body>
+</html>

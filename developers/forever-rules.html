@@ -1,0 +1,202 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>What the client allows · Norgannon developers</title>
+<meta name="description" content="How to build WoW Forever add-ons on Norgannon Core.">
+<meta name="theme-color" content="#0b0907">
+<meta property="og:type" content="website">
+<meta property="og:title" content="What the client allows · Norgannon developers">
+<meta property="og:description" content="How to build WoW Forever add-ons on Norgannon Core.">
+<meta property="og:image" content="../img/social-card.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" type="image/png" sizes="32x32" href="../img/marks/core-32.png">
+<link rel="apple-touch-icon" href="../img/marks/core-256.png">
+<link rel="preload" href="../fonts/Marcellus-Regular.ttf" as="font" type="font/ttf" crossorigin>
+<link rel="stylesheet" href="../style.css">
+</head>
+<body class="">
+<a class="skip" href="#main">Skip to content</a>
+<header class="top" id="top">
+  <div class="top-inner">
+    <a class="brand" href="../index.html"><img src="../img/marks/core-64.png" alt="" width="34" height="34"><span>Norgannon</span></a>
+    <nav class="nav" id="nav" aria-label="Main">
+      <a href="../index.html">Home</a>
+      <a href="../addons.html">Add-ons</a>
+      <a href="../improve.html">Help improve it</a>
+      <a href="../index.html#faq">FAQ</a>
+      <a href="../developers/index.html" class="on" aria-current="page">For developers</a>
+    </nav>
+    <a class="btn small nav-cta" href="../addons.html">Get the add-ons</a>
+    <button class="menu" id="menu" aria-label="Menu" aria-expanded="false" aria-controls="nav">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</header>
+<main id="main">
+<div class="wrap doc"><aside class="toc"><div class="docs-nav"><p class="toc-title">Developers</p><a href="index.html">Overview</a><a href="getting-started.html">Getting started</a><a href="forever-rules.html" class="on">What the client allows</a><a href="core-api.html">Core API</a><a href="database-spec.html">Database specification</a></div><div class="on-page"><p class="toc-title">On this page</p><a href="#never">Never</a><a href="#secret-values">Secret values</a><a href="#errors-in-combat-for-add-on-code">Errors in combat (for add-on code)</a><a href="#knowing-when-youre-restricted">Knowing when you&#x27;re restricted</a><a href="#chat-and-add-on-messages">Chat and add-on messages</a><a href="#names">Names</a><a href="#maps-and-position">Maps and position</a><a href="#other-client-facts">Other client facts</a></div></aside><article class="prose"><h1 id="what-the-forever-client-allows">What the Forever client allows</h1>
+<p>WoW Forever runs Classic content on the modern client (interface 16001). That client limits add-ons in ways Classic
+add-on authors don't expect. This page collects what the suite has learned. The evidence is ApiProbe's runs on
+2026-11-07, recorded in the <a href="../api/index.html">Forever API reference</a> (its Restrictions page, and one page per API system).
+Probe your own calls there before you build on them.</p>
+<h2 id="never">Never</h2>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Don't</th>
+<th>Why</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Call any <code>C_Housing*</code>, <code>C_House*</code> or <code>C_Neighborhood*</code> function</td>
+<td>It can crash the client (ACCESS_VIOLATION), even with no arguments</td>
+</tr>
+<tr>
+<td>Register <code>COMBAT_LOG_EVENT</code> or <code>COMBAT_LOG_EVENT_UNFILTERED</code></td>
+<td>ADDON_ACTION_FORBIDDEN. There's no combat log for add-ons. Count kills from XP or loot instead</td>
+</tr>
+<tr>
+<td>Register <code>UNIT_PING_PIN_ADDED</code> / <code>_REMOVED</code></td>
+<td>Forbidden</td>
+</tr>
+<tr>
+<td>Call <code>C_Discord.*</code> getters, <code>C_Navigation.GetNearestPartyMemberToken</code> or <code>C_SocialRestrictions.IsAgeVerificationRestrictedMinor</code></td>
+<td>Forbidden</td>
+</tr>
+<tr>
+<td>Compare, add, concatenate, index or <code>tostring</code> a value that may be secret</td>
+<td>It errors. See below</td>
+</tr>
+</tbody>
+</table></div>
+<h2 id="secret-values">Secret values</h2>
+<p>A secret value can be stored and handed to a widget, but not inspected. Check with <code>Core.IsSecret(v)</code>, read with
+<code>Core.Plain(fn, ...)</code> (secrets become <code>nil</code>), and hand raw values to widgets with <code>Core.SetSecret(widget, method, v)</code>.</p>
+<p><strong>Always secret, in and out of combat:</strong> <code>UnitHealth</code>, <code>UnitHealthMissing</code>, <code>UnitHealthPercent</code>, <code>UnitPower</code>,
+<code>UnitPowerMissing</code>, <code>UnitPowerPercent</code>, <code>UnitPartialPower</code>, <code>UnitGetIncomingHeals</code>, <code>UnitGetTotalAbsorbs</code>,
+<code>UnitGetTotalHealAbsorbs</code>, <code>UnitInRange</code>, <code>UnitPercentHealthFromGUID</code>, <code>UnitThreatPercentageOfLead</code>,
+<code>UnitSpellTargetName</code>.</p>
+<p>Core does this for you: <code>UI.UnitBar</code> (health and power), <code>Core.Secret</code> (curves, text, show-if, colours) and
+<code>UI.UnitAuras</code> (auras in combat, drawn by the game). By hand, widgets take them as they are: <code>StatusBar:SetValue</code>, <code>SetMinMaxValues</code>, <code>FontString:SetFormattedText("%d", v)</code>,
+<code>SetAlphaFromBoolean</code>, and colour curves (<code>UnitHealthPercent(unit, true, curve)</code> gives a colour or alpha you pass on).
+Mercy's <code>unitframe.lua</code> is the worked example.</p>
+<p><strong>Secret in combat:</strong> about 55 character-stat getters (<code>GetCritChance</code>, <code>GetHaste</code>, <code>GetMastery</code>, <code>UnitArmor</code>,
+<code>UnitAttackPower</code>, <code>UnitDamage</code>, <code>UnitStat</code>, <code>GetUnitSpeed</code>, <code>UnitIsCharmed</code>, ...), action and spell cooldown durations
+(<code>C_Spell.GetSpellCooldown().duration</code>), and display counts.</p>
+<p><strong>Unit identity goes secret all at once</strong> for some units (<code>C_Secrets.ShouldUnitIdentityBeSecret</code>): <code>UnitName</code>,
+<code>UnitFullName</code>, <code>UnitGUID</code>, <code>UnitRace</code>, <code>UnitClass</code> and <code>UnitPVPName</code> together. Nameplate units are where this bites.</p>
+<h2 id="errors-in-combat-for-add-on-code">Errors in combat (for add-on code)</h2>
+<p>These calls <strong>error</strong> in combat with "Auras cannot be accessed when secret while tainted", even for <code>"player"</code>:
+<code>C_UnitAuras.GetUnitAuraInstanceIDs</code>, <code>GetUnitAuras</code>, <code>GetAuraDataByIndex</code>, <code>GetAuraDataBySlot</code>,
+<code>GetBuffDataByIndex</code>, <code>GetDebuffDataByIndex</code>, <code>GetAuraSlots</code>, and <code>C_TooltipInfo.GetUnitAura</code> / <code>GetUnitBuff</code> /
+<code>GetUnitDebuff</code>. Read auras out of combat and keep the answer, or let Blizzard draw them
+(<code>C_UnitAuras.AddPrivateAuraAnchor</code>, as Mercy does).</p>
+<p><code>C_GuildInfo.GetMOTD</code>, <code>GetInfoText</code>, <code>GetGuildRosterMOTD</code> and <code>GetGuildInfoText</code> are blocked in combat.</p>
+<h2 id="knowing-when-youre-restricted">Knowing when you're restricted</h2>
+<ul>
+<li><code>InCombatLockdown()</code> is the reliable combat test. <code>C_RestrictedActions.IsAddOnRestrictionActive(Enum.AddOnRestrictionType.Combat)</code>
+  read <strong>false</strong> during open-world combat, so never use it alone.</li>
+<li>Restriction kinds: Combat 0, Encounter 1, ChallengeMode 2, PvPMatch 3, Map 4, Chat 5, plus the event
+  <code>ADDON_RESTRICTION_STATE_CHANGED</code>. <code>Map</code> only means you're on a map with restrictions, and <code>Chat</code> covers add-on chat.
+  Neither stops moving items.</li>
+<li>Protected work (secure buttons, their attributes, showing or moving protected frames) waits with
+  <code>Core:AfterCombat(fn, key)</code>. The Settings window doesn't open in combat either: <code>A:OpenSettings()</code> from
+  <code>Core:NewAddon</code> waits for you.</li>
+</ul>
+<h2 id="chat-and-add-on-messages">Chat and add-on messages</h2>
+<ul>
+<li><code>CHAT_MSG_SYSTEM</code>, <code>_WHISPER</code>, <code>_GUILD</code>, <code>_OFFICER</code>, <code>_PARTY*</code>, <code>_RAID*</code>, <code>_SAY</code>, <code>_EMOTE</code>, <code>_YELL</code>, <code>_CHANNEL</code> and
+  <code>_TEXT_EMOTE</code> are secret during chat lockdown. <code>CHAT_MSG_LOOT</code> and <code>CHAT_MSG_ADDON</code> are not.</li>
+<li><code>C_ChatInfo.AreOutgoingAddonChatMessagesRestricted</code> is about add-ons sending <em>chat</em>. Add-on messages may still flow.
+  <code>C_ChatInfo.SendAddonMessage</code> returns an <code>Enum.SendAddonMessageResult</code> (0 to 12) that says why a send failed.</li>
+<li>ChatThrottleLib holds messages for its first 5 seconds after login.</li>
+<li>Use <code>C_ChatInfo.SendChatMessage</code>. The old global exists too, but the namespaced call is the one that stays.</li>
+</ul>
+<h2 id="names">Names</h2>
+<p>Forever characters have a first and a last name.</p>
+<ul>
+<li>The guild roster and <code>UnitName</code> give the <strong>first</strong> name. Chat senders and <code>GetUnitName("player", true)</code> give
+  "First Last".</li>
+<li><strong>A whisper to a first name alone fails</strong> ("No player named ..."). Keep the full name you saw in chat, or the sender
+  of an add-on message, to reply to someone.</li>
+<li><code>Core.Guild.Short(name)</code> turns any form ("Tyrant Kuma", "Tyrant-Realm", "Tyrant") into the first name, which is the
+  key the roster uses.</li>
+</ul>
+<h2 id="maps-and-position">Maps and position</h2>
+<ul>
+<li>Coordinates come from <code>Core.Player:GetPosition()</code> and Core's copy of HereBeDragons, patched for Forever's Classic map
+  hierarchy. Don't call <code>C_Map</code> directly for the player's position.</li>
+<li><code>C_Map.GetBestMapForUnit("player")</code> works in the open world (Maro, 2026-11-07: <code>1413</code>). It returns <code>nil</code>, and so does
+  <code>UnitPosition</code>, where the <code>Map</code> restriction is active (ApiProbe's run) and in instances. Handle <code>nil</code>.</li>
+</ul>
+<h2 id="other-client-facts">Other client facts</h2>
+<ul>
+<li><code>GuildRosterSetOfficerNote</code> doesn't exist. Notes go through <code>C_GuildInfo.SetNote</code>, which is restricted.</li>
+<li>The guild finder is off on Forever.</li>
+<li>Modern <code>strlower(...)</code> returns every argument it's given: <code>strlower(UnitClass("player"))</code> passes two strings on.</li>
+<li><code>Interface/ui-code-list.txt</code> in the game's CASC lists every Blizzard UI file, and any CASC reader can list it.</li>
+</ul></article></div>
+</main>
+<footer class="foot">
+  <div class="foot-inner">
+    <div class="foot-brand">
+      <a class="brand" href="../index.html"><img src="../img/marks/core-64.png" alt="" width="34" height="34"><span>Norgannon</span></a>
+      <p>Add-ons made for WoW Forever. Free, and better every time someone plays.</p>
+    </div>
+    <div class="foot-col">
+      <h4>Add-ons</h4>
+      <a href="../addons.html#world">Out in the world</a>
+      <a href="../addons.html#group">In a group</a>
+      <a href="../addons.html#account">Your account</a>
+      <a href="../addons.html#guild">Your guild</a>
+      <a href="../addons.html#install">How to install</a>
+    </div>
+    <div class="foot-col">
+      <h4>Community</h4>
+      <a href="../improve.html">Help improve it</a>
+      <a href="../index.html#faq">Questions</a>
+      <a href="https://github.com/zmarotrix">GitHub</a>
+    </div>
+    <div class="foot-col">
+      <h4>Developers</h4>
+      <a href="../developers/index.html">Build on Norgannon</a>
+      <a href="../developers/getting-started.html">Getting started</a>
+      <a href="../api/index.html">Forever API reference</a>
+    </div>
+  </div>
+  <div class="foot-fine">
+    <p>Made by <b>Maro</b>. Quest, creature, object and item data from <a href="https://github.com/Questie/Questie">Questie and QuestieDB</a>
+      (GPL-3.0) and <a href="https://github.com/shagu/pfQuest">pfQuest</a> by Shagu (MIT). Dungeon data from DungeonJournal by
+      Exehn, used with permission. Fonts: Marcellus and Alegreya Sans (SIL Open Font License).</p>
+    <p>Not affiliated with Blizzard Entertainment or the WoW Forever team. World of Warcraft is a trademark of Blizzard
+      Entertainment.</p>
+  </div>
+</footer>
+<script>
+(function () {
+  var b = document.getElementById("menu"), n = document.getElementById("nav"), top = document.getElementById("top");
+  b.addEventListener("click", function () {
+    var open = n.classList.toggle("open");
+    b.setAttribute("aria-expanded", open ? "true" : "false");
+  });
+  var onScroll = function () { top.classList.toggle("scrolled", window.scrollY > 8); };
+  window.addEventListener("scroll", onScroll, { passive: true });
+  onScroll();
+  // sections fade up as they come into view (everything is visible without script or with reduced motion)
+  if ("IntersectionObserver" in window && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    var els = document.querySelectorAll(".section-head, .pillar, .feature, .showcase, .steps-row li, .faq, .cta, .bigstats, .privacy > div, .split > div, .credits");
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add("shown"); io.unobserve(e.target); } });
+    }, { rootMargin: "0px 0px -8% 0px" });
+    var vh = window.innerHeight;
+    els.forEach(function (el) {
+      if (el.getBoundingClientRect().top < vh) return;   // already on screen (or jumped to): show it as it is
+      el.classList.add("reveal", "pending"); io.observe(el);
+    });
+  }
+})();
+</script>
+</body>
+</html>
