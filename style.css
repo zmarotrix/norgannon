@@ -693,10 +693,6 @@ kbd { display: inline-block; min-width: 1.9em; padding: 2px 9px; border-radius: 
 .keys { white-space: nowrap; }
 .share3-join span { text-align: center; }
 .share3-credit { max-width: 640px; margin: 16px auto 0; text-align: center; color: var(--muted); font-size: 16.5px; }
-/* mission: how it's made, plain and quiet */
-.made { max-width: 760px; }
-.made h2 { font-size: clamp(26px, 3vw, 34px); margin: 0 0 12px; }
-.made p { color: var(--muted); font-size: 18px; margin: 0; }
 
 /* code highlighting (pygments github-dark) */
 pre { line-height: 125%; }
