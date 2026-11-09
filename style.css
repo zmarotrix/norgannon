@@ -100,20 +100,20 @@ p { margin: 0 0 16px; }
 .hero { position: relative; overflow: hidden; }
 .hero-home { padding: 56px 0 96px; }
 .hero-page { padding: 64px 0 56px; }
+/* Ulduar's planetarium: nebulae, a band of stars, titan constellations and orrery rings (tools/site/sky.py), with a
+   sparse layer of bright stars that twinkles */
 .sky { position: absolute; inset: -80px 0 0; pointer-events: none; z-index: -1;
   background:
-    radial-gradient(1px 1px at 12% 22%, rgba(255, 255, 255, .7), transparent 60%),
-    radial-gradient(1px 1px at 28% 68%, rgba(255, 255, 255, .45), transparent 60%),
-    radial-gradient(1.5px 1.5px at 44% 14%, rgba(166, 228, 255, .8), transparent 60%),
-    radial-gradient(1px 1px at 63% 42%, rgba(255, 255, 255, .5), transparent 60%),
-    radial-gradient(1px 1px at 77% 18%, rgba(255, 255, 255, .6), transparent 60%),
-    radial-gradient(1.5px 1.5px at 88% 58%, rgba(166, 228, 255, .7), transparent 60%),
-    radial-gradient(1px 1px at 92% 30%, rgba(255, 255, 255, .4), transparent 60%),
-    radial-gradient(1px 1px at 6% 80%, rgba(255, 255, 255, .5), transparent 60%),
-    radial-gradient(1px 1px at 52% 86%, rgba(255, 255, 255, .35), transparent 60%),
-    radial-gradient(ellipse 50% 60% at 78% 40%, rgba(79, 159, 208, .16), transparent 70%),
-    radial-gradient(ellipse 60% 50% at 15% 10%, rgba(231, 198, 108, .10), transparent 70%);
-  -webkit-mask-image: linear-gradient(#000 70%, transparent); mask-image: linear-gradient(#000 70%, transparent); }
+    linear-gradient(180deg, rgba(7, 6, 5, .1), rgba(7, 6, 5, .35) 70%),
+    url("img/sky.svg") center top / cover no-repeat,
+    radial-gradient(ellipse 70% 80% at 72% 35%, #120f2a, transparent 75%),
+    var(--void);
+  -webkit-mask-image: linear-gradient(#000 62%, transparent); mask-image: linear-gradient(#000 62%, transparent); }
+.sky::before, .sky::after { content: ""; position: absolute; inset: 0; background: url("img/sky-twinkle.svg") center top / cover no-repeat;
+  opacity: 0; animation: twinkle 7s ease-in-out infinite; }
+.sky::after { transform: scale(-1, 1); animation-delay: -3.5s; animation-duration: 9s; }
+@keyframes twinkle { 0%, 100% { opacity: 0; } 50% { opacity: .75; } }
+@media (prefers-reduced-motion: reduce) { .sky::before, .sky::after { animation: none; opacity: .35; } }
 .hero-grid { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, .95fr); gap: 48px; align-items: center; }
 .hero-grid.narrow { grid-template-columns: minmax(0, 1.3fr) minmax(0, .7fr); }
 .hero h1 { background: linear-gradient(180deg, #fff7df 10%, #e8c977 95%); -webkit-background-clip: text; background-clip: text; color: transparent; }
