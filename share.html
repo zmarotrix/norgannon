@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Share your finds · Norgannon</title>
+<meta name="description" content="Send what your Norgannon Collector found, and choose whether your name goes on the leaderboard.">
+<meta name="theme-color" content="#0b0907">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Share your finds · Norgannon">
+<meta property="og:description" content="Send what your Norgannon Collector found, and choose whether your name goes on the leaderboard.">
+<meta property="og:image" content="https://zmarotrix.github.io/norgannon/img/social-card.png">
+<meta property="og:url" content="https://zmarotrix.github.io/norgannon/share.html">
+<link rel="canonical" href="https://zmarotrix.github.io/norgannon/share.html">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" type="image/png" sizes="32x32" href="img/marks/core-32.png">
+<link rel="apple-touch-icon" href="img/marks/core-256.png">
+<link rel="preload" href="fonts/Marcellus-Regular.ttf" as="font" type="font/ttf" crossorigin>
+<link rel="stylesheet" href="style.css">
+</head>
+<body class="">
+<a class="skip" href="#main">Skip to content</a>
+<header class="top" id="top">
+  <div class="top-inner">
+    <a class="brand" href="index.html"><img src="img/marks/core-64.png" alt="" width="34" height="34"><span>Norgannon</span></a>
+    <nav class="nav" id="nav" aria-label="Main">
+      <a href="index.html">Home</a>
+      <a href="addons.html">Add-ons</a>
+      <a href="improve.html" class="on" aria-current="page">Help improve it</a>
+      <a href="index.html#faq">FAQ</a>
+      <a href="developers/index.html">For developers</a>
+    </nav>
+    <a class="btn small nav-cta" href="addons.html">Get the add-ons</a>
+    <button class="menu" id="menu" aria-label="Menu" aria-expanded="false" aria-controls="nav">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</header>
+<main id="main">
+
+<section class="hero hero-page">
+  <div class="sky" aria-hidden="true"></div>
+  <div class="wrap">
+    <span class="eyebrow star">Share your finds</span>
+    <h1>Send what your Collector found</h1>
+    <p class="lead">It takes a minute. Your file is read here in your browser, and nothing is sent until you post it
+      yourself.</p>
+  </div>
+</section>
+
+<section class="section share">
+  <div class="wrap"><div class="share-steps">
+    <div class="share-step">
+      <span class="step-n">1</span>
+      <div>
+        <h2>Find your Collector file</h2>
+        <p>Log out or type <code>/reload</code> first, so the game saves it. Then open this folder:</p>
+        <p class="path"><code>World of Warcraft\_forever_\WTF\Account\<i>YOUR ACCOUNT</i>\SavedVariables</code></p>
+        <p>The file is called <code>NorgannonDBCollector.lua</code>. It holds only what the Collector saw in the world:
+          no character names, and nothing about other players.</p>
+        <label class="drop" id="drop">
+          <input type="file" id="file" accept=".lua,text/plain">
+          <svg class="drop-icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V5M7 9.5l5-5 5 5M5 20h14"/></svg>
+          <span class="drop-main" id="drop-name">Drop the file here, or click to choose it</span>
+        </label>
+        <p class="problem" id="problem" role="alert" hidden></p>
+        <div class="found" id="summary" hidden>
+          <div><b id="n-finds">0</b><span>finds</span></div>
+          <div><b id="n-npcs">0</b><span>creatures</span></div>
+          <div><b id="n-objects">0</b><span>objects</span></div>
+          <div><b id="n-quests">0</b><span>quests</span></div>
+          <div><b id="n-items">0</b><span>items</span></div>
+          <div><b id="n-sessions">0</b><span>sessions</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="share-step">
+      <span class="step-n">2</span>
+      <div>
+        <h2>Choose how you're credited</h2>
+        <fieldset class="credit">
+          <legend class="sr-only">Leaderboard</legend>
+          <label class="choice"><input type="radio" name="credit" id="credit-no" checked>
+            <span><b>Stay anonymous</b>Your finds still count. You're counted with the other anonymous players.</span></label>
+          <label class="choice"><input type="radio" name="credit" id="credit-yes">
+            <span><b>Show me on the <a href="improve.html#leaderboard">leaderboard</a></b>Pick any name. It doesn't have to
+              be your character's.</span></label>
+          <input class="name" id="credit-name" type="text" maxlength="24" placeholder="Name to show" autocomplete="nickname">
+        </fieldset>
+        <button class="btn" id="make" type="button" disabled><svg class="icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11M7 10.5l5 5 5-5M5 20h14"/></svg> Make my finds file</button>
+      </div>
+    </div>
+
+    <div class="share-step" id="step-send" hidden>
+      <span class="step-n">3</span>
+      <div>
+        <h2>Post it</h2>
+        <p>Your browser saved <code>norgannon-finds.txt</code>. Open the form, drag that file into the box, and press
+          <b>Create</b>. You'll need a free GitHub account.</p>
+        <a class="btn" id="form-link" href="https://github.com/zmarotrix/NorgannonDBCollector/issues/new?template=share-finds.yml"
+          target="_blank" rel="noopener">Open the form on GitHub <svg class="icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+        <p class="fine">Share again whenever you like. Each new file replaces your last one, so nothing counts twice.</p>
+      </div>
+    </div>
+  </div></div>
+</section>
+<script src="share.js"></script>
+</main>
+<footer class="foot">
+  <div class="foot-inner">
+    <div class="foot-brand">
+      <a class="brand" href="index.html"><img src="img/marks/core-64.png" alt="" width="34" height="34"><span>Norgannon</span></a>
+      <p>Add-ons made for WoW Forever. Free, and better every time someone plays.</p>
+    </div>
+    <div class="foot-col">
+      <h4>Add-ons</h4>
+      <a href="addons.html#world">Out in the world</a>
+      <a href="addons.html#group">In a group</a>
+      <a href="addons.html#account">Your account</a>
+      <a href="addons.html#guild">Your guild</a>
+      <a href="addons.html#install">How to install</a>
+    </div>
+    <div class="foot-col">
+      <h4>Community</h4>
+      <a href="improve.html">Help improve it</a>
+      <a href="index.html#faq">Questions</a>
+      <a href="https://github.com/zmarotrix">GitHub</a>
+    </div>
+    <div class="foot-col">
+      <h4>Developers</h4>
+      <a href="developers/index.html">Build on Norgannon</a>
+      <a href="developers/getting-started.html">Getting started</a>
+      <a href="api/index.html">Forever API reference</a>
+    </div>
+  </div>
+  <div class="foot-fine">
+    <p>Made by <b>Maro</b>. Quest, creature, object and item data from <a href="https://github.com/Questie/Questie">Questie and QuestieDB</a>
+      (GPL-3.0) and <a href="https://github.com/shagu/pfQuest">pfQuest</a> by Shagu (MIT). Dungeon data from DungeonJournal by
+      Exehn, used with permission. Fonts: Marcellus and Alegreya Sans (SIL Open Font License).</p>
+    <p>Not affiliated with Blizzard Entertainment or the WoW Forever team. World of Warcraft is a trademark of Blizzard
+      Entertainment.</p>
+  </div>
+</footer>
+<script>
+(function () {
+  var b = document.getElementById("menu"), n = document.getElementById("nav"), top = document.getElementById("top");
+  b.addEventListener("click", function () {
+    var open = n.classList.toggle("open");
+    b.setAttribute("aria-expanded", open ? "true" : "false");
+  });
+  var onScroll = function () { top.classList.toggle("scrolled", window.scrollY > 8); };
+  window.addEventListener("scroll", onScroll, { passive: true });
+  onScroll();
+  // sections fade up as they come into view (everything is visible without script or with reduced motion)
+  if ("IntersectionObserver" in window && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    var els = document.querySelectorAll(".section-head, .pillar, .feature, .showcase, .steps-row li, .faq, .cta, .bigstats, .privacy > div, .split > div, .credits");
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add("shown"); io.unobserve(e.target); } });
+    }, { rootMargin: "0px 0px -8% 0px" });
+    var vh = window.innerHeight;
+    els.forEach(function (el) {
+      if (el.getBoundingClientRect().top < vh) return;   // already on screen (or jumped to): show it as it is
+      el.classList.add("reveal", "pending"); io.observe(el);
+    });
+  }
+})();
+</script>
+</body>
+</html>
