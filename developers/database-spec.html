@@ -610,7 +610,7 @@ reaction code (<code>flight</code>, <code>innkeeper</code>, <code>vendor</code>,
 <code>stablemaster</code>, <code>battlemaster</code>, <code>spirithealer</code>, <code>mailbox</code>, <code>meetingstone</code>, <code>trainer</code>,
 <code>chests</code>).</p>
 <p><strong>Instances</strong> <em>(1.3)</em> — keys such as <code>"deadmines"</code>, <code>"sm-cathedral"</code>, <code>"aq40"</code>. Facts are
-authored once (<code>tools/norgannondb/instances.py</code>); bosses' loot and the quests are found by the build.</p>
+written by hand; bosses' loot and the quests are found by the build.</p>
 <div class="table-wrap"><table>
 <thead>
 <tr>
@@ -797,10 +797,10 @@ says which). Addons that need the neutral data call <code>NorgannonDB:GetVariant
 <code>"pfquest"</code>, <code>"questie+pfquest"</code>, <code>"collector"</code> (only players have seen it), or the owner of the
 last correction.</p>
 <h2 id="7-sources-and-precedence">7. Sources and precedence</h2>
-<p>The data is compiled offline by <code>tools/norgannondb/build.py</code>:</p>
+<p>Each release is built from these sources, in this order:</p>
 <ol>
-<li><strong>QuestieDB</strong> (GPL-3.0), loaded through its own code so all of its corrections apply. It
-   is the source of truth: any field it provides wins.</li>
+<li><strong>QuestieDB</strong> (GPL-3.0), loaded through its own code so all of its corrections apply. Any
+   field it provides wins.</li>
 <li><strong>pfQuest</strong> (MIT) fills fields QuestieDB lacks: drop chances, respawn timers,
    reference loot tables, area triggers, tracking categories, quest descriptions, vendor stock
    counts. pfQuest coordinates are projected into the target client's map frame first.</li>
@@ -811,9 +811,7 @@ last correction.</p>
 <li><strong>NorgannonDB Collector</strong> findings from real play are added last. They add to a record and never
    remove from it, and changing something QuestieDB provides takes repeated sightings.</li>
 </ol>
-<p>Because it includes QuestieDB data, the compiled database is distributed under <strong>GPL-3.0</strong>.</p>
-<p>A JSON export with the same structure (string keys) is written to <code>dist/json/</code> for
-non-Lua tools.</p></article></div>
+<p>Because it includes QuestieDB data, the compiled database is distributed under <strong>GPL-3.0</strong>.</p></article></div>
 </main>
 <footer class="foot">
   <div class="foot-inner">
