@@ -16,7 +16,7 @@
 <link rel="icon" type="image/png" sizes="32x32" href="img/marks/core-32.png">
 <link rel="apple-touch-icon" href="img/marks/core-256.png">
 <link rel="preload" href="fonts/Marcellus-Regular.ttf" as="font" type="font/ttf" crossorigin>
-<link rel="stylesheet" href="style.css?v=be8c6893">
+<link rel="stylesheet" href="style.css?v=d927ba6d">
 </head>
 <body class="">
 <a class="skip" href="#main">Skip to content</a>
@@ -24,15 +24,13 @@
   <div class="top-inner">
     <a class="brand" href="index.html"><img src="img/marks/core-64.png" alt="" width="34" height="34"><span>Norgannon</span></a>
     <nav class="nav" id="nav" aria-label="Main">
-      <a href="index.html">Home</a>
-      <a href="mission.html">Mission</a>
-      <a href="addons.html">Add-ons</a>
-      <a href="improve.html" class="on" aria-current="page">Help improve it</a>
-      <a href="leaderboard.html">Leaderboard</a>
-      <a href="index.html#faq">FAQ</a>
-      <a href="developers/index.html">For developers</a>
-      <a class="nav-ext" href="https://discord.gg/mvnuGyfMxB" rel="noopener"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6.5A2.5 2.5 0 0 1 6.5 4h11A2.5 2.5 0 0 1 20 6.5v8a2.5 2.5 0 0 1-2.5 2.5H10l-4.5 3.5V17A2.5 2.5 0 0 1 4 14.5z"/><path d="M8.5 10.5h.01M12 10.5h.01M15.5 10.5h.01"/></svg>Discord</a>
+      <a href="addons.html" class="nav-top">Add-ons</a>
+      <a href="install.html" class="nav-top">Install</a>
+      <div class="nav-group on"><button class="nav-top" type="button" aria-expanded="false" aria-controls="nav-g2">Community<span class="caret" aria-hidden="true"></span></button><ul class="nav-menu" id="nav-g2" aria-label="Community"><li><a href="improve.html" class="on" aria-current="page">Help improve it</a></li><li><a href="share.html">Share your finds</a></li><li><a href="leaderboard.html">Leaderboard</a></li><li><a href="https://discord.gg/mvnuGyfMxB" rel="noopener">Discord</a></li></ul></div>
+      <div class="nav-group"><button class="nav-top" type="button" aria-expanded="false" aria-controls="nav-g3">About<span class="caret" aria-hidden="true"></span></button><ul class="nav-menu" id="nav-g3" aria-label="About"><li><a href="mission.html">Our mission</a></li><li><a href="index.html#news">What's new</a></li><li><a href="index.html#faq">FAQ</a></li></ul></div>
+      <a href="developers/index.html" class="nav-top">Developers</a>
     </nav>
+    <a class="top-discord" href="https://discord.gg/mvnuGyfMxB" rel="noopener" aria-label="Discord" title="Discord"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6.5A2.5 2.5 0 0 1 6.5 4h11A2.5 2.5 0 0 1 20 6.5v8a2.5 2.5 0 0 1-2.5 2.5H10l-4.5 3.5V17A2.5 2.5 0 0 1 4 14.5z"/><path d="M8.5 10.5h.01M12 10.5h.01M15.5 10.5h.01"/></svg><span>Discord</span></a>
     <a class="btn small nav-cta" href="addons.html">Get the add-ons</a>
     <button class="menu" id="menu" aria-label="Menu" aria-expanded="false" aria-controls="nav">
       <span></span><span></span><span></span>
@@ -72,7 +70,7 @@
       <div class="bigstats tight">
         <div><b>5,415</b><span>quests</span></div>
         <div><b>13,686</b><span>creatures</span></div>
-        <div><b>10,517</b><span>objects</span></div>
+        <div><b>10,518</b><span>objects</span></div>
         <div><b>24,155</b><span>items</span></div>
         <div><b>43</b><span>dungeons and raids</span></div>
         <div><b>2,222</b><span>recipes</span></div>
@@ -164,7 +162,7 @@
       <a href="addons.html#group">In a group</a>
       <a href="addons.html#account">Your account</a>
       <a href="addons.html#guild">Your guild</a>
-      <a href="addons.html#install">How to install</a>
+      <a href="install.html">Install and update</a>
     </div>
     <div class="foot-col">
       <h4>Community</h4>
@@ -199,6 +197,21 @@
     var open = n.classList.toggle("open");
     b.setAttribute("aria-expanded", open ? "true" : "false");
   });
+  // header menus: open on click (and hover, by CSS, with a mouse); one at a time; Escape or a click outside closes
+  var groups = n.querySelectorAll(".nav-group");
+  var closeAll = function (except) {
+    groups.forEach(function (g) { if (g !== except) { g.classList.remove("open"); g.querySelector(".nav-top").setAttribute("aria-expanded", "false"); } });
+  };
+  groups.forEach(function (g) {
+    var t = g.querySelector(".nav-top");
+    t.addEventListener("click", function (e) {
+      e.stopPropagation();
+      var open = !g.classList.contains("open");
+      closeAll(g); g.classList.toggle("open", open); t.setAttribute("aria-expanded", open ? "true" : "false");
+    });
+  });
+  document.addEventListener("click", function () { closeAll(); });
+  document.addEventListener("keydown", function (e) { if (e.key === "Escape") closeAll(); });
   var onScroll = function () { top.classList.toggle("scrolled", window.scrollY > 8); };
   window.addEventListener("scroll", onScroll, { passive: true });
   onScroll();
