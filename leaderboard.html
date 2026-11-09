@@ -4,11 +4,11 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Leaderboard · Norgannon</title>
-<meta name="description" content="The players helping make WoW Forever&#x27;s add-ons more accurate, just by playing.">
+<meta name="description" content="The players helping make WoW Forever&#x27;s add-ons more accurate, just by playing, and the bounties open now.">
 <meta name="theme-color" content="#0b0907">
 <meta property="og:type" content="website">
 <meta property="og:title" content="Leaderboard · Norgannon">
-<meta property="og:description" content="The players helping make WoW Forever&#x27;s add-ons more accurate, just by playing.">
+<meta property="og:description" content="The players helping make WoW Forever&#x27;s add-ons more accurate, just by playing, and the bounties open now.">
 <meta property="og:image" content="https://zmarotrix.github.io/norgannon/img/social-card.png">
 <meta property="og:url" content="https://zmarotrix.github.io/norgannon/leaderboard.html">
 <link rel="canonical" href="https://zmarotrix.github.io/norgannon/leaderboard.html">
@@ -39,49 +39,67 @@
 </header>
 <main id="main">
 
-<section class="hero hero-page">
+<section class="hero hero-page hero-board">
   <div class="sky" aria-hidden="true"></div>
-  <div class="wrap">
+  <div class="wrap center">
     <span class="eyebrow star">Leaderboard</span>
     <h1>The players keeping Azeroth true</h1>
-    <p class="lead">Every name here helped make WoW Forever's add-ons more accurate, just by playing. Yours could be
-      next.</p>
-    <div class="actions left"><a class="btn" href="share.html"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V5M7 9.5l5-5 5 5M5 20h14"/></svg> Share your finds</a>
-      <a class="btn ghost" href="improve.html">How the Collector works</a></div>
+    <p class="lead">Every name here made WoW Forever's add-ons more accurate, just by playing. There's room at the top.</p>
+    <div class="board-totals">
+      <div><b data-count="720">720</b><span>points earned</span></div>
+      <div><b data-count="72">72</b><span>fixes from players</span></div>
+      <div><b data-count="1">1</b><span>players shared</span></div>
+    </div>
   </div>
 </section>
 
-<section class="section board-page">
-  <div class="wrap board-layout">
+<section class="section podium-section">
+  <div class="wrap"><div class="podium"><a class="step silver open" href="share.html"><div class="crest"><span class="place">2</span></div><b class="name">Your name here</b><em class="title">This place is open</em><span class="sub">Share your finds to claim it</span><div class="plinth"></div></a><div class="step gold"><div class="crest"><img src="img/marks/core-128.png" alt="" width="64" height="64"><span class="place">1</span></div><b class="name">MARO</b><em class="title">Loremaster</em><span class="pts">720<small>points</small></span><span class="sub">72 fixes · 711 finds</span><div class="plinth"></div></div><a class="step bronze open" href="share.html"><div class="crest"><span class="place">3</span></div><b class="name">Your name here</b><em class="title">This place is open</em><span class="sub">Share your finds to claim it</span><div class="plinth"></div></a></div>
+    <p class="fine center">Updated 8 November 2026. Names are only shown when players ask.</p></div>
+</section>
+
+<section class="section" id="bounties">
+  <div class="wrap">
+    <div class="section-head center"><span class="eyebrow">Bounties</span><h2>Where your finds are worth more</h2>
+      <p>These are the things the game data needs most right now. Fixes that help with one earn extra points while it's
+        open.</p></div>
+    <div class="bounties"><article class="bounty"><div class="seal">×3<small>points</small></div><div><h3>Dungeon loot</h3><p>Many boss drop chances were never known. Loot every corpse in a dungeon and help fill them in.</p><span class="bounty-meta">Open now</span></div></article><article class="bounty"><div class="seal">×2<small>points</small></div><div><h3>What vendors sell</h3><p>Open every vendor you pass: Forever changed a lot of stock.</p><span class="bounty-meta">Open now</span></div></article><article class="bounty"><div class="seal">×2<small>points</small></div><div><h3>Quest chains</h3><p>Take the next quest straight after a turn-in, and the Collector learns which quests lead to which.</p><span class="bounty-meta">Open now</span></div></article></div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap split start">
     <div>
-      <div class="board-stats">
-        <div><b>0</b><span>players shared</span></div>
-        <div><b>72</b><span>fixes from players</span></div>
-        <div><b>0</b><span>on the board</span></div>
-      </div>
-      <div class="board"><div class="board-head"><span></span><span>Player</span><span class="num">Fixes</span><span class="num">Finds</span></div><ol><li class="empty">No names on the board yet. Share your finds and choose to show your name, and yours will be the first.</li></ol><p class="fine">Updated 8 November 2026.</p></div>
+      <span class="eyebrow">Titles</span>
+      <h2>Rise through the ranks</h2>
+      <p>Your points earn you a title on the board, from your first fix to the keepers of the whole record.</p>
+      <ol class="ladder"><li><b>Initiate</b><span>0+</span></li><li><b>Seeker</b><span>50+</span></li><li><b>Chronicler</b><span>200+</span></li><li><b>Loremaster</b><span>500+</span></li><li><b>Keeper of the Record</b><span>1,500+</span></li><li><b>Titan-touched</b><span>5,000+</span></li></ol>
     </div>
     <aside class="board-help">
       <h2>How it counts</h2>
-      <h3>Fixes</h3>
-      <p>Corrections your finds helped put into NorgannonDB. If you confirm something another player saw first, it
-        counts for you too. Fixes decide your place.</p>
-      <h3>Finds</h3>
-      <p>Everything your Collector noticed was different from the game data, fixed yet or not.</p>
+      <h3>Points</h3>
+      <p>Each fix your finds help put into NorgannonDB earns 10 points, more if it answers a bounty.
+        Confirming something another player saw first counts too.</p>
+      <h3>Checked before it counts</h3>
+      <p>Every file is checked when it arrives, and a change to the game data needs more than one player behind it. Only
+        fixes that make it into an update earn points.</p>
       <h3>Your name, your choice</h3>
       <p>Players are anonymous unless they ask to be shown when they share. Pick any name: it doesn't have to be your
         character's. Share again as anonymous and your name comes off.</p>
       <h3>Nothing counts twice</h3>
       <p>Each time you share, your new file replaces your last one.</p>
+      <div class="actions left"><a class="btn" href="share.html"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V5M7 9.5l5-5 5 5M5 20h14"/></svg> Share your finds</a></div>
     </aside>
   </div>
 </section>
+<script src="board.js"></script>
 </main>
 <footer class="foot">
   <div class="foot-inner">
     <div class="foot-brand">
       <a class="brand" href="index.html"><img src="img/marks/core-64.png" alt="" width="34" height="34"><span>Norgannon</span></a>
       <p>Add-ons made for WoW Forever. Free, and better every time someone plays.</p>
+      <a class="kofi" href="https://ko-fi.com/zmarotrix" rel="noopener">Enjoying them? Support Maro on Ko-fi</a>
     </div>
     <div class="foot-col">
       <h4>Add-ons</h4>
@@ -94,6 +112,8 @@
     <div class="foot-col">
       <h4>Community</h4>
       <a href="improve.html">Help improve it</a>
+      <a href="share.html">Share your finds</a>
+      <a href="leaderboard.html">Leaderboard</a>
       <a href="index.html#faq">Questions</a>
       <a href="https://github.com/zmarotrix">GitHub</a>
     </div>

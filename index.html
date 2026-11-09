@@ -89,17 +89,14 @@
   </div>
 </section>
 
-<section class="section" id="leaderboard">
-  <div class="wrap split">
-    <div>
-      <span class="eyebrow">Leaderboard</span>
-      <h2>The players keeping Azeroth true</h2>
-      <p>Every fix you help with counts, even when someone else saw it first. Show your name, or stay
-        anonymous: it's your choice each time you share.</p>
-      <div class="actions left"><a class="btn" href="share.html"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V5M7 9.5l5-5 5 5M5 20h14"/></svg> Share your finds</a>
-        <a class="btn ghost" href="leaderboard.html"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M8 4h8v5a4 4 0 0 1-8 0zM8 6H5c0 3 1.5 4.5 3.5 4.5M16 6h3c0 3-1.5 4.5-3.5 4.5M12 13v4M8.5 20h7M10 17h4"/></svg> Full leaderboard</a></div>
-    </div>
-    <div class="board preview"><div class="board-head"><span></span><span>Player</span><span class="num">Fixes</span><span class="num">Finds</span></div><ol><li class="empty">No names on the board yet. Share your finds and choose to show your name, and yours will be the first.</li></ol><a class="board-more" href="leaderboard.html">See everyone <svg class="icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a></div>
+<section class="section board-preview" id="leaderboard">
+  <div class="wrap">
+    <div class="section-head center"><span class="eyebrow">Leaderboard</span><h2>The players keeping Azeroth true</h2>
+      <p>1 player has shared, and earned 720 points between them. Every fix you help with earns points, and bounties pay more.</p></div>
+    <div class="podium"><a class="step silver open" href="share.html"><div class="crest"><span class="place">2</span></div><b class="name">Your name here</b><em class="title">This place is open</em><span class="sub">Share your finds to claim it</span><div class="plinth"></div></a><div class="step gold"><div class="crest"><img src="img/marks/core-128.png" alt="" width="64" height="64"><span class="place">1</span></div><b class="name">MARO</b><em class="title">Loremaster</em><span class="pts">720<small>points</small></span><span class="sub">72 fixes · 711 finds</span><div class="plinth"></div></div><a class="step bronze open" href="share.html"><div class="crest"><span class="place">3</span></div><b class="name">Your name here</b><em class="title">This place is open</em><span class="sub">Share your finds to claim it</span><div class="plinth"></div></a></div>
+    <a class="bounty-teaser" href="leaderboard.html#bounties"><span class="seal small">×3</span><span><b>Bounty open: Dungeon loot</b>Many boss drop chances were never known. Loot every corpse in a dungeon and help fill them in.</span></a>
+    <div class="actions"><a class="btn" href="leaderboard.html"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M8 4h8v5a4 4 0 0 1-8 0zM8 6H5c0 3 1.5 4.5 3.5 4.5M16 6h3c0 3-1.5 4.5-3.5 4.5M12 13v4M8.5 20h7M10 17h4"/></svg> See the full leaderboard</a>
+      <a class="btn ghost" href="share.html"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V5M7 9.5l5-5 5 5M5 20h14"/></svg> Share your finds</a></div>
   </div>
 </section>
 
@@ -131,7 +128,7 @@
       <h2>Before you install</h2>
       <p>Still wondering about something? Ask on any add-on's GitHub page.</p>
     </div>
-    <div class="faq"><details><summary>Are they free?</summary><p>Yes. Every Norgannon add-on is free to download and use.</p></details><details><summary>Do I need all of them?</summary><p>No. Install only the ones you want. Each one also needs Norgannon Core, a small shared add-on, and some need NorgannonDB, the game data. The add-ons page says which.</p></details><details><summary>Will they work with my other add-ons?</summary><p>Usually, yes. If you run two add-ons that do the same job, like two quest helpers or two bag add-ons, keep the one you prefer. Clairvoyance even shows the quest progress of party members who use Questie.</p></details><details><summary>Will they slow my game down?</summary><p>They&#x27;re built to stay light, and they hold off on any extra work until a fight is over. Add-ons that don&#x27;t need the game data don&#x27;t load it.</p></details><details><summary>Do they play the game for me?</summary><p>No. They show you information. Anything they do for you, like selling junk at a vendor, is off until you switch it on, and every heal, roll and whisper is a click you make.</p></details><details><summary>What does the Collector record?</summary><p>Creatures, objects, quests and loot it sees while you play, and only what the game data has wrong or missing. Never character names and never other players. You choose when to share it.</p></details><details><summary>Something&#x27;s broken. Where do I tell you?</summary><p>These are early versions, so reports help a lot. Open an issue on the add-on&#x27;s GitHub page and say what you were doing.</p></details></div>
+    <div class="faq"><details><summary>Are they free?</summary><p>Yes. Every Norgannon add-on is free to download and use.</p></details><details><summary>Do I need all of them?</summary><p>No. Install only the ones you want. Each one also needs Norgannon Core, a small shared add-on, and some need NorgannonDB, the game data. The add-ons page says which.</p></details><details><summary>Will they work with my other add-ons?</summary><p>Usually, yes. If you run two add-ons that do the same job, like two quest helpers or two bag add-ons, keep the one you prefer. Clairvoyance even shows the quest progress of party members who use Questie.</p></details><details><summary>Will they slow my game down?</summary><p>They&#x27;re built to stay light, and they hold off on any extra work until a fight is over. Add-ons that don&#x27;t need the game data don&#x27;t load it.</p></details><details><summary>Do they play the game for me?</summary><p>No. They show you information. Anything they do for you, like selling junk at a vendor, is off until you switch it on, and every heal, roll and whisper is a click you make.</p></details><details><summary>What does the Collector record?</summary><p>Creatures, objects, quests and loot it sees while you play, and only what the game data has wrong or missing. Never character names and never other players. You choose when to share it.</p></details><details><summary>Something&#x27;s broken. Where do I tell you?</summary><p>These are early versions, so reports help a lot. Open an issue on the add-on&#x27;s GitHub page and say what you were doing.</p></details><details><summary>Can I support the work?</summary><p>Everything here is free, and it stays free. If you&#x27;d like to say thanks, you can buy Maro a coffee at ko-fi.com/zmarotrix. Sharing your finds helps just as much.</p></details></div>
   </div>
 </section>
 
@@ -151,6 +148,7 @@
     <div class="foot-brand">
       <a class="brand" href="index.html"><img src="img/marks/core-64.png" alt="" width="34" height="34"><span>Norgannon</span></a>
       <p>Add-ons made for WoW Forever. Free, and better every time someone plays.</p>
+      <a class="kofi" href="https://ko-fi.com/zmarotrix" rel="noopener">Enjoying them? Support Maro on Ko-fi</a>
     </div>
     <div class="foot-col">
       <h4>Add-ons</h4>
@@ -163,6 +161,8 @@
     <div class="foot-col">
       <h4>Community</h4>
       <a href="improve.html">Help improve it</a>
+      <a href="share.html">Share your finds</a>
+      <a href="leaderboard.html">Leaderboard</a>
       <a href="index.html#faq">Questions</a>
       <a href="https://github.com/zmarotrix">GitHub</a>
     </div>
