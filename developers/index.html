@@ -40,7 +40,7 @@
   </div>
 </header>
 <main id="main">
-<div class="wrap doc"><aside class="toc"><div class="docs-nav"><p class="toc-title">Developers</p><a href="index.html" class="on">Overview</a><a href="getting-started.html">Getting started</a><a href="forever-rules.html">What the client allows</a><a href="core-api.html">Core API</a><a href="database-spec.html">Database specification</a></div><div class="on-page"><p class="toc-title">On this page</p><a href="#the-forever-problems-it-solves">The Forever problems it solves</a><a href="#everything-else-the-core-gives-you">Everything else the Core gives you</a><a href="#reading-the-game-data">Reading the game data</a><a href="#where-to-start">Where to start</a><a href="#versions">Versions</a><a href="#the-licence-today">The licence, today</a></div></aside><article class="prose"><h1 id="build-forever-add-ons-without-solving-the-hard-parts-again">Build Forever add-ons without solving the hard parts again</h1>
+<div class="wrap doc"><aside class="toc"><div class="docs-nav"><p class="toc-title">Developers</p><a href="index.html" class="on">Overview</a><a href="getting-started.html">Getting started</a><a href="forever-rules.html">What the client allows</a><a href="core-api.html">Core API</a><a href="database-spec.html">Database specification</a></div><div class="on-page"><p class="toc-title">On this page</p><a href="#the-forever-problems-it-solves">The Forever problems it solves</a><a href="#everything-else-the-core-gives-you">Everything else the Core gives you</a><a href="#reading-the-game-data">Reading the game data</a><a href="#where-to-start">Where to start</a><a href="#help-improve-the-forever-api-reference">Help improve the Forever API reference</a><a href="#versions">Versions</a><a href="#the-licence-today">The licence, today</a></div></aside><article class="prose"><h1 id="build-forever-add-ons-without-solving-the-hard-parts-again">Build Forever add-ons without solving the hard parts again</h1>
 <p>Norgannon Core (version 1.26.2, folder <code>NorgannonDB_Core</code>) is the runtime every Norgannon add-on is built on. It
 solves the parts of writing for WoW Forever that every add-on runs into, so yours can be mostly the thing it's for,
 and look and behave like part of the family from the first build.</p>
@@ -122,13 +122,21 @@ on <a href="https://github.com/zmarotrix/NorgannonDB/issues">NorgannonDB's GitHu
    how to work with them. Read this before you trust anything you know from retail or Classic.</li>
 <li><strong><a href="core-api.html">Core API</a></strong>: every function the Core promises to keep. Anything not listed there is internal.</li>
 <li><strong><a href="database-spec.html">Database specification</a></strong>: NorgannonDB's tables and fields, if you read the game data.</li>
-<li><strong><a href="../api/index.html">The Forever API reference</a></strong>: the client's own functions, events and widgets, as recorded
+<li><strong><a href="https://zmarotrix.github.io/ForeverAPI/">The Forever API reference</a></strong>: the client's own functions, events and widgets, as recorded
    in the game by a probe add-on rather than guessed from other clients. It includes a table of where each classic
    function went, and definitions for VS Code's Lua extension that flag calls that go secret in combat, are forbidden
    or are protected.</li>
 </ol>
 <p><a href="NorgannonTemplate.zip">NorgannonTemplate</a> is a small, complete add-on to copy from. Norgannon's tests load it on every
 build, so it always works with the current Core.</p>
+<h2 id="help-improve-the-forever-api-reference">Help improve the Forever API reference</h2>
+<p>The <a href="https://zmarotrix.github.io/ForeverAPI/">Forever API reference</a> is recorded in the game by <strong>ForeverAPI Probe</strong>, an add-on for add-on developers. It notes how the game's functions behave: what kind of value each one gives back, which turn secret in combat, which calls fail, and the order events arrive in. It records shapes only, never the values themselves and never names.</p>
+<ol>
+<li><a href="https://github.com/zmarotrix/ForeverAPI/releases/latest">Download the probe</a> from ForeverAPI's release, and switch on the parts you care about with <code>/fapi</code>.</li>
+<li>Play, or run the code you're working on, as usual.</li>
+<li>Type <code>/fapi export</code>, copy the text, and attach it to an <a href="https://github.com/zmarotrix/ForeverAPI/issues/new?template=api-data.yml">"API data" issue</a> on ForeverAPI's GitHub page.</li>
+</ol>
+<p>Data from other people shows as <strong>reported</strong>, with a count, until Maro's own run confirms it or two different people's data agree. One file never marks anything as confirmed.</p>
 <h2 id="versions">Versions</h2>
 <p>An add-on asks for the Core version it was written for: <code>api = { 1, 20 }</code> means "written for Core 1.20". It runs on
 any later 1.x, because a minor version only ever adds. A new major version may change things, and the Core says so
@@ -170,7 +178,7 @@ published for general use. Until then, ask before you release an add-on that dep
       <h4>Developers</h4>
       <a href="../developers/index.html">Build on Norgannon</a>
       <a href="../developers/getting-started.html">Getting started</a>
-      <a href="../api/index.html">Forever API reference</a>
+      <a href="https://zmarotrix.github.io/ForeverAPI/" rel="noopener">Forever API reference</a>
     </div>
   </div>
   <div class="foot-fine">

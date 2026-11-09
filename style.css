@@ -475,7 +475,12 @@ td:first-child code { white-space: nowrap; word-break: normal; }
   -webkit-background-clip: text; background-clip: text; color: transparent; font-variant-numeric: tabular-nums; }
 .board-totals span { margin-top: 8px; font: 700 12.5px/1 var(--body); letter-spacing: .18em; text-transform: uppercase; color: var(--star); }
 
-.podium { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; align-items: end; max-width: 900px; margin: 0 auto; }
+.podium { position: relative; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; align-items: end; max-width: 900px;
+  margin: 0 auto; padding-bottom: 16px; }
+/* the stone base all three steps stand on */
+.podium::after { content: ""; position: absolute; left: -28px; right: -28px; bottom: 0; height: 16px; border-radius: 3px;
+  background: linear-gradient(180deg, #2b2216, #130f0a); border-top: 1px solid rgba(231, 198, 108, .5);
+  box-shadow: 0 22px 34px -14px rgba(0, 0, 0, .95), 0 -2px 26px -10px rgba(231, 198, 108, .35); }
 .step { --m: #e7c66c; --m2: #9c7a3c; position: relative; display: flex; flex-direction: column; align-items: center; text-align: center;
   padding: 26px 18px 0; text-decoration: none; color: var(--text); border-radius: 18px 18px 0 0;
   background: radial-gradient(ellipse 80% 60% at 50% 0%, color-mix(in srgb, var(--m) 22%, transparent), transparent 70%),
@@ -498,8 +503,9 @@ td:first-child code { white-space: nowrap; word-break: normal; }
 .step .pts { margin-top: 14px; font: 400 clamp(28px, 3.4vw, 42px)/1 var(--title); color: var(--text); display: flex; flex-direction: column; align-items: center; }
 .step .pts small { font: 700 11px/1 var(--body); letter-spacing: .2em; text-transform: uppercase; color: var(--faint); margin-top: 6px; }
 .step .sub { margin: 10px 0 18px; font-size: 14px; color: var(--muted); }
-.step .plinth { align-self: stretch; margin: 0 -18px; height: 70px; border-top: 1px solid color-mix(in srgb, var(--m) 40%, transparent);
-  background: linear-gradient(180deg, color-mix(in srgb, var(--m) 14%, transparent), transparent); }
+.step .plinth { align-self: stretch; margin: 0 -18px; height: 70px; border-top: 1px solid color-mix(in srgb, var(--m) 55%, transparent);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--m) 16%, #1e1811), #0f0c08);
+  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--m) 35%, transparent), inset 0 -14px 20px -14px rgba(0, 0, 0, .9); }
 .step.gold .plinth { height: 110px; }
 .step.bronze .plinth { height: 46px; }
 .step.open { opacity: .75; transition: opacity .2s, transform .2s; }
@@ -544,7 +550,9 @@ td:first-child code { white-space: nowrap; word-break: normal; }
   .podium { grid-template-columns: 1fr; gap: 14px; }
   .step, .step.gold { padding-top: 24px; }
   .step.gold { order: -1; }
-  .step .plinth, .step.gold .plinth, .step.bronze .plinth { height: 18px; }
+  .podium { padding-bottom: 0; }
+  .podium::after, .step .plinth { display: none; }
+  .step { border-bottom: 1px solid color-mix(in srgb, var(--m) 45%, transparent); border-radius: 18px; padding-bottom: 6px; }
   .board .board-head, .board li { grid-template-columns: 26px minmax(0, 1fr) 64px 48px; }
   .board .num.dim { display: none; }
 }
@@ -646,6 +654,7 @@ td:first-child code { white-space: nowrap; word-break: normal; }
   .nav a.nav-ext { margin-left: 0; border-bottom: 0; }
 }
 @media (max-width: 760px) { .nav { top: 64px; } }
+.podium + .fine, .podium ~ .fine { margin-top: 20px; }
 
 /* code highlighting (pygments github-dark) */
 pre { line-height: 125%; }
