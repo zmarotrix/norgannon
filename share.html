@@ -45,14 +45,21 @@
   <div class="sky" aria-hidden="true"></div>
   <div class="wrap">
     <span class="eyebrow star">Share your finds</span>
-    <h1>Send what your Collector found</h1>
-    <p class="lead">It takes a minute. Your file is read here in your browser, and nothing is sent until you post it
-      yourself.</p>
+    <h1>Three steps, about ten seconds</h1>
+    <p class="lead">Your finds go from the game straight into our Discord. No files to look for, and no forms to fill in.</p>
   </div>
 </section>
 
+<section class="section share-main">
+  <div class="wrap"><ol class="share3"><li><span class="share3-n">1</span><h3>In the game</h3><p>Type <code>/ndbc share</code>, then press <span class="keys"><kbd>Ctrl</kbd> + <kbd>C</kbd></span>.</p></li><li><span class="share3-n">2</span><h3>In our Discord</h3><p>Open <a class="chan" href="https://discord.com/channels/1569191387134697614/1569197599926390784" rel="noopener">#share-finds</a>, press <span class="keys"><kbd>Ctrl</kbd> + <kbd>V</kbd></span>, then <kbd>Enter</kbd>.</p></li><li><span class="share3-n">3</span><h3>That&#x27;s it</h3><p>Your post disappears, and our bot tells you privately what you found. Your finds go into the next update for every player.</p></li></ol><div class="share3-join"><a class="btn" href="https://discord.gg/mvnuGyfMxB" rel="noopener"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6.5A2.5 2.5 0 0 1 6.5 4h11A2.5 2.5 0 0 1 20 6.5v8a2.5 2.5 0 0 1-2.5 2.5H10l-4.5 3.5V17A2.5 2.5 0 0 1 4 14.5z"/><path d="M8.5 10.5h.01M12 10.5h.01M15.5 10.5h.01"/></svg> Join our Discord</a><span>Not on our Discord yet? It&#x27;s free, and you only need to join once.</span></div><p class="share3-credit">You stay anonymous unless you choose otherwise. After your first share, the bot asks you privately whether to show your name on the leaderboard, and you can change it any time with <code>/credit</code> in Discord. Maro can still see which Discord account sent finds, so no one is counted twice. Shared finds are checked with AI help, then Maro approves each change. <a href="mission.html#how-its-made">How it&#x27;s made</a>.</p></div>
+</section>
+
 <section class="section share">
-  <div class="wrap"><div class="share-steps">
+  <div class="wrap"><details class="other-ways" id="other-ways">
+    <summary>Other ways to send finds</summary>
+    <p class="other-note">No Discord? You can send your Collector file from this page instead. It takes a few more steps and a free GitHub account. Your file is read here in your browser, and nothing is sent until
+      you post it yourself.</p>
+    <div class="share-steps">
     <div class="share-step">
       <span class="step-n">1</span>
       <div>
@@ -106,7 +113,7 @@
         <p class="fine">Share again whenever you like. Each new file replaces your last one, so nothing counts twice.</p>
       </div>
     </div>
-  </div></div>
+  </div></details></div>
 </section>
 <script src="share.js"></script>
 </main>
@@ -149,6 +156,7 @@
     <p>Made by <b>Maro</b>. Quest, creature, object and item data from <a href="https://github.com/Questie/Questie">Questie and QuestieDB</a>
       (GPL-3.0) and <a href="https://github.com/shagu/pfQuest">pfQuest</a> by Shagu (MIT). Dungeon data from DungeonJournal by
       Exehn, used with permission. Fonts: Marcellus and Alegreya Sans (SIL Open Font License).</p>
+    <p>Built with AI assistance · <a href="mission.html#how-its-made">How it&#x27;s made</a></p>
     <p>Not affiliated with Blizzard Entertainment or the WoW Forever team. World of Warcraft is a trademark of Blizzard
       Entertainment.</p>
   </div>

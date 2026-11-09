@@ -656,6 +656,48 @@ td:first-child code { white-space: nowrap; word-break: normal; }
 @media (max-width: 760px) { .nav { top: 64px; } }
 .podium + .fine, .podium ~ .fine { margin-top: 20px; }
 
+/* sharing finds: three big steps through Discord */
+.share3 { list-style: none; padding: 0; margin: 0 auto; max-width: 1000px; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; }
+.share3 li { position: relative; padding: 30px 28px 28px; border-radius: var(--radius); border: 1px solid var(--line-strong);
+  background: radial-gradient(ellipse 80% 70% at 50% 0, rgba(166, 228, 255, .08), transparent 70%), linear-gradient(180deg, var(--stone2), var(--night)); }
+.share3-n { display: grid; place-items: center; width: 56px; height: 56px; border-radius: 50%; margin-bottom: 18px; font: 28px/1 var(--title);
+  color: #1a1206; background: linear-gradient(180deg, var(--gold-hi), var(--gold-soft) 60%, #9c7a3c); box-shadow: 0 0 24px rgba(231, 198, 108, .35); }
+.share3 h3 { color: var(--text); font-size: 26px; margin: 0 0 12px; }
+.share3 p { margin: 0; font-size: 21px; line-height: 1.7; color: var(--text); }
+.share3 code { font-size: 19px; padding: 3px 9px; white-space: nowrap; }
+.chan { color: var(--star); font-weight: 700; white-space: nowrap; text-decoration-color: rgba(166, 228, 255, .4); }
+.chan:hover { color: #fff; }
+kbd { display: inline-block; min-width: 1.9em; padding: 2px 9px; border-radius: 7px; font: 700 .85em/1.4 var(--body); text-align: center;
+  color: var(--text); background: linear-gradient(180deg, #2c241a, #17120c); border: 1px solid var(--line-strong);
+  box-shadow: inset 0 -3px 0 rgba(0, 0, 0, .55), 0 1px 0 rgba(255, 255, 255, .05); white-space: nowrap; }
+.share3-join { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 14px 20px; margin-top: 30px; }
+.share3-join span { color: var(--muted); }
+.share3-other { margin-top: 18px; }
+.share-main { padding-bottom: 20px; }
+.other-ways { max-width: 860px; margin: 0 auto; border: 1px solid var(--line); border-radius: var(--radius); background: rgba(255, 255, 255, .015); }
+.other-ways > summary { cursor: pointer; list-style: none; padding: 20px 24px; font: 400 22px/1.2 var(--title); color: var(--gold-soft);
+  display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.other-ways > summary::-webkit-details-marker { display: none; }
+.other-ways > summary::after { content: ""; width: 9px; height: 9px; border-right: 2px solid var(--gold-soft); border-bottom: 2px solid var(--gold-soft);
+  transform: rotate(45deg); margin-top: -4px; transition: transform .2s; }
+.other-ways[open] > summary::after { transform: rotate(-135deg); margin-top: 4px; }
+.other-ways .other-note { color: var(--muted); padding: 0 24px; margin: 0 0 20px; }
+.other-ways .share-steps { padding: 0 18px 20px; max-width: none; }
+@media (max-width: 960px) { .share3 { grid-template-columns: 1fr; max-width: 560px; } }
+@media (max-width: 720px) {
+  .share3 p { font-size: 19px; }
+  .other-ways > summary { padding: 18px; font-size: 20px; }
+  .other-ways .other-note { padding: 0 18px; }
+  .other-ways .share-steps { padding: 0 10px 14px; }
+}
+.keys { white-space: nowrap; }
+.share3-join span { text-align: center; }
+.share3-credit { max-width: 640px; margin: 16px auto 0; text-align: center; color: var(--muted); font-size: 16.5px; }
+/* mission: how it's made, plain and quiet */
+.made { max-width: 760px; }
+.made h2 { font-size: clamp(26px, 3vw, 34px); margin: 0 0 12px; }
+.made p { color: var(--muted); font-size: 18px; margin: 0; }
+
 /* code highlighting (pygments github-dark) */
 pre { line-height: 125%; }
 td.linenos .normal { color: #6e7681; background-color: #0d1117; padding-left: 5px; padding-right: 5px; }

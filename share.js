@@ -149,3 +149,9 @@
   drop.addEventListener("drop", function (ev) { read(ev.dataTransfer.files[0]); });
   syncCredit();
 })();
+
+// a link to share.html#other-ways (from Help improve it) opens the folded file route
+(function () {
+  var d = document.getElementById("other-ways");
+  if (d && location.hash === "#other-ways") d.open = true;
+})();
