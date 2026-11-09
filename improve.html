@@ -30,6 +30,7 @@
       <a href="leaderboard.html">Leaderboard</a>
       <a href="index.html#faq">FAQ</a>
       <a href="developers/index.html">For developers</a>
+      <a class="nav-ext" href="https://discord.gg/mvnuGyfMxB" rel="noopener"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6.5A2.5 2.5 0 0 1 6.5 4h11A2.5 2.5 0 0 1 20 6.5v8a2.5 2.5 0 0 1-2.5 2.5H10l-4.5 3.5V17A2.5 2.5 0 0 1 4 14.5z"/><path d="M8.5 10.5h.01M12 10.5h.01M15.5 10.5h.01"/></svg>Discord</a>
     </nav>
     <a class="btn small nav-cta" href="addons.html">Get the add-ons</a>
     <button class="menu" id="menu" aria-label="Menu" aria-expanded="false" aria-controls="nav">
@@ -142,7 +143,10 @@
     <div class="foot-brand">
       <a class="brand" href="index.html"><img src="img/marks/core-64.png" alt="" width="34" height="34"><span>Norgannon</span></a>
       <p>Add-ons made for WoW Forever. Free, and better every time someone plays.</p>
-      <a class="kofi" href="https://ko-fi.com/zmarotrix" rel="noopener">Enjoying them? Support Maro on Ko-fi</a>
+      <div class="foot-links">
+        <a class="pill discord" href="https://discord.gg/mvnuGyfMxB" rel="noopener">Join us on Discord</a>
+        <a class="pill kofi" href="https://ko-fi.com/zmarotrix" rel="noopener">Enjoying them? Support Maro on Ko-fi</a>
+      </div>
     </div>
     <div class="foot-col">
       <h4>Add-ons</h4>
@@ -154,6 +158,7 @@
     </div>
     <div class="foot-col">
       <h4>Community</h4>
+      <a href="https://discord.gg/mvnuGyfMxB" rel="noopener">Discord</a>
       <a href="improve.html">Help improve it</a>
       <a href="share.html">Share your finds</a>
       <a href="leaderboard.html">Leaderboard</a>
@@ -187,7 +192,7 @@
   onScroll();
   // sections fade up as they come into view (everything is visible without script or with reduced motion)
   if ("IntersectionObserver" in window && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-    var els = document.querySelectorAll(".section-head, .pillar, .feature, .showcase, .steps-row li, .faq, .cta, .bigstats, .privacy > div, .split > div, .credits");
+    var els = document.querySelectorAll(".section-head, .pillar, .feature, .showcase, .steps-row li, .faq, .cta, .community, .bigstats, .privacy > div, .split > div, .credits");
     var io = new IntersectionObserver(function (entries) {
       entries.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add("shown"); io.unobserve(e.target); } });
     }, { rootMargin: "0px 0px -8% 0px" });
