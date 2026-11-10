@@ -38,8 +38,8 @@
   </div>
 </header>
 <main id="main">
-<div class="wrap doc"><aside class="toc"><div class="docs-nav"><p class="toc-title">Developers</p><a href="index.html" class="on">Overview</a><a href="getting-started.html">Getting started</a><a href="forever-rules.html">What the client allows</a><a href="core-api.html">Core API</a><a href="database-spec.html">Database specification</a></div><div class="on-page"><p class="toc-title">On this page</p><a href="#the-forever-problems-it-solves">The Forever problems it solves</a><a href="#everything-else-the-core-gives-you">Everything else the Core gives you</a><a href="#reading-the-game-data">Reading the game data</a><a href="#where-to-start">Where to start</a><a href="#help-improve-the-forever-api-reference">Help improve the Forever API reference</a><a href="#versions">Versions</a><a href="#the-licence-today">The licence, today</a></div></aside><article class="prose"><h1 id="build-forever-add-ons-without-solving-the-hard-parts-again">Build Forever add-ons without solving the hard parts again</h1>
-<p>Norgannon Core (version 1.26.2, folder <code>NorgannonDB_Core</code>) is the runtime every Norgannon add-on is built on. It
+<div class="wrap doc"><aside class="toc"><div class="docs-nav"><p class="toc-title">Developers</p><a href="index.html" class="on">Overview</a><a href="getting-started.html">Getting started</a><a href="forever-rules.html">What the client allows</a><a href="core-api.html">Core API</a><a href="database-spec.html">Database specification</a></div><div class="on-page"><p class="toc-title">On this page</p><a href="#the-forever-problems-it-solves">The Forever problems it solves</a><a href="#libforever-the-forever-groundwork-shared">LibForever: the Forever groundwork, shared</a><a href="#everything-else-the-core-gives-you">Everything else the Core gives you</a><a href="#reading-the-game-data">Reading the game data</a><a href="#where-to-start">Where to start</a><a href="#help-improve-the-forever-api-reference">Help improve the Forever API reference</a><a href="#versions">Versions</a><a href="#the-licence-today">The licence, today</a></div></aside><article class="prose"><h1 id="build-forever-add-ons-without-solving-the-hard-parts-again">Build Forever add-ons without solving the hard parts again</h1>
+<p>Norgannon Core (version 1.28.2, folder <code>NorgannonDB_Core</code>) is the runtime every Norgannon add-on is built on. It
 solves the parts of writing for WoW Forever that every add-on runs into, so yours can be mostly the thing it's for,
 and look and behave like part of the family from the first build.</p>
 <h2 id="the-forever-problems-it-solves">The Forever problems it solves</h2>
@@ -83,6 +83,25 @@ hit first, and the Core call for each one.</p>
 </tr>
 </tbody>
 </table></div>
+<h2 id="libforever-the-forever-groundwork-shared">LibForever: the Forever groundwork, shared</h2>
+<p>Everything in the table above that isn't about Norgannon's look lives in <strong>LibForever-1.0</strong>, a small library any add-on can embed. Norgannon Core runs on it, so it's tested by every Norgannon add-on on every build.</p>
+<ul>
+<li><strong>Missing classic functions.</strong> <code>LF.Compat</code> gives <code>GetSpellInfo</code>, <code>GetItemInfo</code> and the rest their classic answers.</li>
+<li><strong>Secret values.</strong> <code>LF.Secret</code> and <code>LF.Plain</code> read what can be read, and leave the rest to the client without an error.</li>
+<li><strong>Combat lockdown.</strong> <code>LF:AfterCombat</code> holds protected changes until combat ends, and <code>LF:Restricted</code> says what's locked now.</li>
+<li><strong>First and last names.</strong> <code>LF.Names</code> knows who someone is, and the full name a whisper reaches.</li>
+<li><strong>Add-on messages.</strong> <code>LF.Net</code> sends compressed messages that wait out chat lockdown, and <code>LF:Say</code> gets a chat line through or opens the chat box with it ready.</li>
+</ul>
+<p>Download <a href="https://github.com/zmarotrix/ForeverAPI/releases/tag/libforever-1.0.1">LibForever 1.0.1</a>, or copy <code>LibForever-1.0</code> from <a href="https://github.com/zmarotrix/ForeverAPI/tree/master/lib">ForeverAPI's lib folder</a>. Put it in your add-on's <code>libs</code> folder with <code>LibStub</code>, <code>CallbackHandler-1.0</code> and <code>AceComm-3.0</code>, which come with it. Load them, then <code>LibForever-1.0.xml</code>. If several add-ons ship a copy, the newest one runs. The <a href="https://github.com/zmarotrix/ForeverAPI/blob/master/lib/README.md">quick start</a> has the full steps.</p>
+<div class="hl"><pre><span></span><code><span class="kd">local</span><span class="w"> </span><span class="nv">LF</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nf">LibStub</span><span class="p">(</span><span class="s2">&quot;LibForever-1.0&quot;</span><span class="p">)</span>
+<span class="nv">LF</span><span class="p">:</span><span class="nf">On</span><span class="p">(</span><span class="s2">&quot;PLAYER_LOGIN&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;MyAddon&quot;</span><span class="p">,</span><span class="w"> </span><span class="kr">function</span><span class="p">()</span>
+<span class="w">  </span><span class="kd">local</span><span class="w"> </span><span class="nv">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">LF</span><span class="p">.</span><span class="py">Compat</span><span class="p">.</span><span class="nf">GetSpellInfo</span><span class="p">(</span><span class="mi">8936</span><span class="p">)</span>
+<span class="w">  </span><span class="nv">LF</span><span class="p">:</span><span class="nf">Print</span><span class="p">(</span><span class="nv">name</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;MyAddon&quot;</span><span class="p">)</span>
+<span class="kr">end</span><span class="p">)</span>
+</code></pre></div>
+
+<p>LibForever is under the <a href="https://github.com/zmarotrix/ForeverAPI/blob/master/lib/LICENSE">MIT licence</a>: copy it, change it and ship it in your own add-on, free or not. Its bundled libraries keep their own licences. Bug reports and pull requests are welcome on <a href="https://github.com/zmarotrix/ForeverAPI">ForeverAPI's GitHub page</a>.</p>
+<p>Coming: a port scanner that lists what an old add-on needs to run on Forever, and a test kit to run an add-on outside the game.</p>
 <h2 id="everything-else-the-core-gives-you">Everything else the Core gives you</h2>
 <ul>
 <li><strong>One call to start.</strong> <code>Core:NewAddon</code> gives you the version check, saved variables with defaults and migrations,
