@@ -16,7 +16,7 @@
 <link rel="icon" type="image/png" sizes="32x32" href="../img/marks/core-32.png">
 <link rel="apple-touch-icon" href="../img/marks/core-256.png">
 <link rel="preload" href="../fonts/Marcellus-Regular.ttf" as="font" type="font/ttf" crossorigin>
-<link rel="stylesheet" href="../style.css?v=d927ba6d">
+<link rel="stylesheet" href="../style.css?v=107305f1">
 </head>
 <body class="">
 <a class="skip" href="#main">Skip to content</a>
@@ -62,7 +62,7 @@ major version.</p>
 <tbody>
 <tr>
 <td><code>NorgannonDB.schema</code></td>
-<td><code>{ major = 1, minor = 2 }</code></td>
+<td><code>{ major = 1, minor = 5 }</code></td>
 </tr>
 <tr>
 <td><code>NorgannonDB.info</code></td>
@@ -882,6 +882,11 @@ last correction.</p>
    only adds chances. pfQuest's lists are used only where QuestieDB has none.</li>
 <li>Entities only pfQuest knows are kept and marked <code>"pfquest"</code> in provenance. Consumers decide
    whether to trust them (the pfQuest adapter skips pfQuest-only quests).</li>
+<li><strong>DungeonJournal</strong> by Exehn (used with the author's permission, credited) adds WoW Forever's own
+   instances (bosses, loot, quests, level ranges, entrances) and the loot WoW Forever added to classic
+   dungeons. It records no drop chances, so its links have chance 0 until another source knows better.</li>
+<li><strong>cmangos classic-db</strong> (GPL-3.0) says which recipe each recipe item teaches, and what trainers teach,
+   for how much and at what skill.</li>
 <li><strong>NorgannonDB Collector</strong> findings from real play are added last. They add to a record and never
    remove from it, and changing something QuestieDB provides takes repeated sightings.</li>
 </ol>
@@ -925,7 +930,7 @@ last correction.</p>
   <div class="foot-fine">
     <p>Made by <b>Maro</b>. Quest, creature, object and item data from <a href="https://github.com/Questie/Questie">Questie and QuestieDB</a>
       (GPL-3.0) and <a href="https://github.com/shagu/pfQuest">pfQuest</a> by Shagu (MIT). Dungeon data from DungeonJournal by
-      Exehn, used with permission. Fonts: Marcellus and Alegreya Sans (SIL Open Font License).</p>
+      Exehn, used with permission. Recipe and trainer data from <a href="https://github.com/cmangos/classic-db">cmangos classic-db</a> (GPL-3.0). Fonts: Marcellus and Alegreya Sans (SIL Open Font License).</p>
     <p>Built with the help of AI (Anthropic&#x27;s Claude).</p>
     <p>Not affiliated with Blizzard Entertainment or the WoW Forever team. World of Warcraft is a trademark of Blizzard
       Entertainment.</p>

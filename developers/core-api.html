@@ -16,7 +16,7 @@
 <link rel="icon" type="image/png" sizes="32x32" href="../img/marks/core-32.png">
 <link rel="apple-touch-icon" href="../img/marks/core-256.png">
 <link rel="preload" href="../fonts/Marcellus-Regular.ttf" as="font" type="font/ttf" crossorigin>
-<link rel="stylesheet" href="../style.css?v=d927ba6d">
+<link rel="stylesheet" href="../style.css?v=107305f1">
 </head>
 <body class="">
 <a class="skip" href="#main">Skip to content</a>
@@ -38,9 +38,11 @@
   </div>
 </header>
 <main id="main">
-<div class="wrap doc"><aside class="toc"><div class="docs-nav"><p class="toc-title">Developers</p><a href="index.html">Overview</a><a href="getting-started.html">Getting started</a><a href="forever-rules.html">What the client allows</a><a href="core-api.html" class="on">Core API</a><a href="database-spec.html">Database specification</a></div><div class="on-page"><p class="toc-title">On this page</p><a href="#lifecycle-and-messages">Lifecycle and messages</a><a href="#client-layer">Client layer</a><a href="#suite-registry-and-actions">Suite registry and actions</a><a href="#data-search-and-relations-coredb">Data: search and relations (Core.DB)</a><a href="#player-state-coreplayer">Player state (Core.Player)</a><a href="#map-layer-coremap">Map layer (Core.Map)</a><a href="#quest-colours-corecolors">Quest colours (Core.Colors)</a><a href="#compass-corecompass">Compass (Core.Compass)</a><a href="#waypoint-arrow-corearrow">Waypoint arrow (Core.Arrow)</a><a href="#party-comms-corecomms-11">Party comms (Core.Comms) (1.1)</a><a href="#action-menu-11">Action menu (1.1)</a><a href="#settings-controls-11">Settings controls (1.1)</a><a href="#quest-item-buttons-coreitembuttons-11">Quest item buttons (Core.ItemButtons) (1.1)</a><a href="#the-norgannondb-card">The NorgannonDB card</a><a href="#settings">Settings</a><a href="#ui-kit-coreui">UI kit (Core.UI)</a><a href="#commands">Commands</a><a href="#coming-in-later-1x-versions">Coming in later 1.x versions</a><a href="#performance-110">Performance (1.10)</a><a href="#text-glow-111">Text glow (1.11)</a><a href="#instances-112-norgannondb-13">Instances (1.12, NorgannonDB 1.3)</a><a href="#minimap-buttons-113-the-norgannon-button-118">Minimap buttons (1.13; the Norgannon button 1.18)</a><a href="#recipes-114-norgannondb-14">Recipes (1.14, NorgannonDB 1.4)</a><a href="#known-recipes-115">Known recipes (1.15)</a><a href="#bags-116">Bags (1.16)</a><a href="#guild-roster-117">Guild roster (1.17)</a><a href="#building-an-add-on-119">Building an add-on (1.19)</a><a href="#names-restrictions-and-action-rows-120">Names, restrictions and action rows (1.20)</a><a href="#add-on-messages-corenet-121">Add-on messages (Core.Net, 1.21)</a><a href="#classic-functions-and-the-client-123">Classic functions and the client (1.23)</a><a href="#secret-values-and-auras-124">Secret values and auras (1.24)</a><a href="#chat-lines-from-add-ons-125">Chat lines from add-ons (1.25)</a></div></aside><article class="prose"><h1 id="norgannondb_core-api-version-126">NorgannonDB_Core API — version 1.26</h1>
+<div class="wrap doc"><aside class="toc"><div class="docs-nav"><p class="toc-title">Developers</p><a href="index.html">Overview</a><a href="getting-started.html">Getting started</a><a href="forever-rules.html">What the client allows</a><a href="core-api.html" class="on">Core API</a><a href="database-spec.html">Database specification</a></div><div class="on-page"><p class="toc-title">On this page</p><a href="#lifecycle-and-messages">Lifecycle and messages</a><a href="#client-layer">Client layer</a><a href="#suite-registry-and-actions">Suite registry and actions</a><a href="#data-search-and-relations-coredb">Data: search and relations (Core.DB)</a><a href="#player-state-coreplayer">Player state (Core.Player)</a><a href="#map-layer-coremap">Map layer (Core.Map)</a><a href="#quest-colours-corecolors">Quest colours (Core.Colors)</a><a href="#compass-corecompass">Compass (Core.Compass)</a><a href="#waypoint-arrow-corearrow">Waypoint arrow (Core.Arrow)</a><a href="#party-comms-corecomms-11">Party comms (Core.Comms) (1.1)</a><a href="#action-menu-11">Action menu (1.1)</a><a href="#settings-controls-11">Settings controls (1.1)</a><a href="#quest-item-buttons-coreitembuttons-11">Quest item buttons (Core.ItemButtons) (1.1)</a><a href="#the-norgannondb-card">The NorgannonDB card</a><a href="#settings">Settings</a><a href="#ui-kit-coreui">UI kit (Core.UI)</a><a href="#commands">Commands</a><a href="#coming-in-later-1x-versions">Coming in later 1.x versions</a><a href="#performance-110">Performance (1.10)</a><a href="#text-glow-111">Text glow (1.11)</a><a href="#instances-112-norgannondb-13">Instances (1.12, NorgannonDB 1.3)</a><a href="#minimap-buttons-113-the-norgannon-button-118">Minimap buttons (1.13; the Norgannon button 1.18)</a><a href="#recipes-114-norgannondb-14">Recipes (1.14, NorgannonDB 1.4)</a><a href="#known-recipes-115">Known recipes (1.15)</a><a href="#bags-116">Bags (1.16)</a><a href="#guild-roster-117">Guild roster (1.17)</a><a href="#building-an-add-on-119">Building an add-on (1.19)</a><a href="#names-restrictions-and-action-rows-120">Names, restrictions and action rows (1.20)</a><a href="#add-on-messages-corenet-121">Add-on messages (Core.Net, 1.21)</a><a href="#classic-functions-and-the-client-123">Classic functions and the client (1.23)</a><a href="#secret-values-and-auras-124">Secret values and auras (1.24)</a><a href="#chat-lines-from-add-ons-125">Chat lines from add-ons (1.25)</a><a href="#libforever-underneath-127-128">LibForever underneath (1.27, 1.28)</a><a href="#map-additions-128">Map additions (1.28)</a></div></aside><article class="prose"><h1 id="norgannon-core-api-version-128">Norgannon Core API — version 1.28</h1>
 <p>The runtime library every suite add-on (Clairvoyance, Oracle, Retrospect, Dimension, Council, Muster, Mercy, Bulwark)
-builds on. It ships in the NorgannonDB download as its own folder, <code>NorgannonDB_Core</code>. NorgannonDB, the game data, is
+builds on. It's its own add-on, in the folder <code>NorgannonDB_Core</code>. Since 1.27 the Forever toolkit parts (events and
+messages, <code>AfterCombat</code>, <code>Restricted</code>, the secret-value helpers, <code>Core.Compat</code>, <code>Core.Secret</code>, <code>Core.Names</code>,
+<code>Core.Net</code>, <code>Core:Say</code> and <code>Core:SavedVars</code>) are <a href="https://github.com/zmarotrix/ForeverAPI/blob/master/lib/README.md">LibForever-1.0</a>'s, under the same names; nothing an add-on calls changed. NorgannonDB, the game data, is
 optional since 1.19: list it in your TOC only if you read it. The Core's code is All Rights Reserved (see its <code>LICENSE</code>); NorgannonDB's data is GPL-3.0. This document is the contract: anything not listed here is internal.</p>
 <div class="hl"><pre><span></span><code><span class="c1">-- TOC:  ## Dependencies: NorgannonDB_Core   (add NorgannonDB if you read the game data)</span>
 <span class="kd">local</span><span class="w"> </span><span class="nv">Core</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">NorgannonCore</span>
@@ -96,7 +98,7 @@ change bumps the major version; add-ons then need updating.</p>
 </tr>
 </tbody>
 </table></div>
-<p>Core messages: <code>NORGANNON_ADDON_REGISTERED (key)</code>, <code>NORGANNON_BAG_BUTTON_UPDATED (button)</code> (a bag window built from the game's item buttons just filled one, so other add-ons can mark it).</p>
+<p>Core messages: <code>NORGANNON_ADDON_REGISTERED (key)</code>. Between suite add-ons: <code>NORGANNON_BAG_BUTTON_UPDATED (button)</code>, which Dimension sends when its bag window, built from the game's item buttons, has filled one, so other add-ons can mark it (Clairvoyance's quest-item marks listen for it).</p>
 <h2 id="client-layer">Client layer</h2>
 <div class="table-wrap"><table>
 <thead>
@@ -180,7 +182,7 @@ change bumps the major version; add-ons then need updating.</p>
 </tr>
 <tr>
 <td><code>DB.indexReady</code>, message <code>NORGANNON_INDEX_READY</code></td>
-<td><em>(1.22)</em> the name index builds one kind at a time, the first time a search or <code>IdsByName</code> asks about it (under 20 ms each); these mean every kind is built. <code>DB:EnsureIndex([kind])</code> builds now, <code>DB:IndexStats()</code> says which kinds are built</td>
+<td><em>(1.22)</em> the name index builds one kind at a time (quests, npcs, objects, items), the first time a search or <code>IdsByName</code> asks about that kind, not at login; these mean every kind is built. <code>DB:EnsureIndex([kind])</code> builds now, <code>DB:IndexStats()</code> says which kinds are built</td>
 </tr>
 <tr>
 <td><code>DB:Name(kind, id)</code></td>
@@ -402,7 +404,7 @@ window's "Powered by NorgannonDB" line opens it.</p>
 <tbody>
 <tr>
 <td><code>Core:OpenSettings()</code></td>
-<td>opens Options &gt; AddOns &gt; NorgannonDB (suite status, versions, credits)</td>
+<td>opens Options &gt; AddOns &gt; Norgannon (your add-ons, versions, credits); in combat it opens when the fight ends</td>
 </tr>
 <tr>
 <td><code>Core:AddSettingsPage(frame, name)</code></td>
@@ -565,7 +567,7 @@ window's "Powered by NorgannonDB" line opens it.</p>
 </tbody>
 </table></div>
 <h2 id="minimap-buttons-113-the-norgannon-button-118">Minimap buttons (1.13; the Norgannon button 1.18)</h2>
-<p>One Norgannon button sits on the minimap; clicking it opens a flyout with a row per registered addon (mark, name, a status line read from its tooltip). A row's left and right clicks go to the addon's <code>onClick</code>, as its own button's would; hovering shows its tooltip less "Drag: move"; the pin at the row's end pins it. A pinned addon also keeps its own round button. Every button drags around the minimap's edge (round and square shapes). Settings: NorgannonDB &gt; Minimap.</p>
+<p>One Norgannon button sits on the minimap; clicking it opens a flyout with a row per registered addon (mark, name, a status line read from its tooltip). A row's left and right clicks go to the addon's <code>onClick</code>, as its own button's would; hovering shows its tooltip less "Drag: move"; the pin at the row's end pins it. A pinned addon also keeps its own round button. Every button drags around the minimap's edge (round and square shapes). Settings: Norgannon &gt; Minimap.</p>
 <div class="table-wrap"><table>
 <thead>
 <tr>
@@ -1007,6 +1009,91 @@ frames. Not <code>SetShown</code>, and no Cooldown setter (those take secrets on
 <td>forgets which chats reach</td>
 </tr>
 </tbody>
+</table></div>
+<h2 id="libforever-underneath-127-128">LibForever underneath (1.27, 1.28)</h2>
+<p>Since 1.27 the Forever toolkit is its own public library, LibForever-1.0 (MIT,
+<a href="https://github.com/zmarotrix/ForeverAPI/tree/master/lib">ForeverAPI/lib</a>), shipped in <code>libs/LibForever-1.0</code> and
+copied there from ForeverAPI by <code>tools/deploy.py</code>. Core's names point at it, so no call above changed:</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Core name</th>
+<th>LibForever's</th>
+<th>Since</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Core:On</code>, <code>:Off</code>, <code>:Listen</code>, <code>:Unlisten</code>, <code>:Send</code>, <code>:SetEventTap</code>, <code>Core.SafeCall</code></td>
+<td>the same, on one shared event frame</td>
+<td>1.27</td>
+</tr>
+<tr>
+<td><code>Core:AfterCombat</code>, <code>:NextFrame</code>, <code>:Restricted</code></td>
+<td>the same. <code>NORGANNON_RESTRICTIONS_CHANGED</code> still fires, after the library's <code>LIBFOREVER_RESTRICTIONS_CHANGED</code></td>
+<td>1.27</td>
+</tr>
+<tr>
+<td><code>Core.Client</code>, <code>Core.IsSecret</code>, <code>.Safe</code>, <code>.Fn</code>, <code>.Has</code>, <code>.Call</code>, <code>.Plain</code>, <code>.Global</code>, <code>.In</code>, <code>.SetSecret</code>, <code>.Now</code></td>
+<td>the same</td>
+<td>1.27</td>
+</tr>
+<tr>
+<td><code>Core.Compat</code></td>
+<td><code>LF.Compat</code>: 60 classic functions (43 by hand, 17 generated by ForeverAPI's <code>tools/compat_gen.py</code>)</td>
+<td>1.27</td>
+</tr>
+<tr>
+<td><code>Core.Secret</code></td>
+<td><code>LF.Secret</code> (<code>UI.UnitBar</code> stays in Core)</td>
+<td>1.27</td>
+</tr>
+<tr>
+<td><code>Core.Names</code></td>
+<td><code>LF.Names</code></td>
+<td>1.27</td>
+</tr>
+<tr>
+<td><code>Core:SavedVars</code>, <code>Core.FillDefaults</code></td>
+<td><code>LF:SavedVars</code>, <code>LF.FillDefaults</code></td>
+<td>1.27</td>
+</tr>
+<tr>
+<td><code>Core.Net</code></td>
+<td><code>LF.Net</code></td>
+<td>1.28</td>
+</tr>
+<tr>
+<td><code>Core:Say</code>, <code>Core:OpenChat</code></td>
+<td><code>LF:Say</code>, <code>LF:OpenChat</code>; Core gives Say its memory, <code>NorgannonCoreDB.say</code> (<code>Core:ResetSay</code> stays in Core)</td>
+<td>1.28</td>
+</tr>
+</tbody>
+</table></div>
+<p><code>Core.LibForever</code> is the library itself. <code>Core:Print</code>, <code>Core:Debug</code> and the debug log stay Core's; the library's
+own debug lines go into the same log.</p>
+<h2 id="map-additions-128">Map additions (1.28)</h2>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Call</th>
+<th>What it does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>a pin's <code>ring = {r, g, b}</code></td>
+<td>a coloured border around the dot (a larger disc behind it), so pins of one colour can still be told apart, such as a quest's objectives. <code>Core.Map.RINGS</code> is true on a Core that has it <em>(1.28.0)</em></td>
+</tr>
+<tr>
+<td><code>Core.Map:Reveal(area, key)</code></td>
+<td>shows the player where pins are without opening Blizzard's map: if the map is open on their zone, the pins pulse now; otherwise they pulse when the player next opens it there. Returns true when shown now, else false and the zone's name to tell the player. Add-ons must never open or switch Blizzard's map or quest log themselves (it taints the map's quest pins; <code>platform_test.py</code> fails any that do) <em>(1.28.1)</em></td>
+</tr>
+<tr>
+<td><code>Core.Map.OpenMapStitched()</code></td>
+<td>true while the world map shows OpenMap's stitched map. The suite's pins then show for every zone in view, above OpenMap's art, placed through <code>OpenMapAPI</code>. Nothing changes on Blizzard's map <em>(1.28.2)</em></td>
+</tr>
+</tbody>
 </table></div></article></div>
 </main>
 <footer class="foot">
@@ -1047,7 +1134,7 @@ frames. Not <code>SetShown</code>, and no Cooldown setter (those take secrets on
   <div class="foot-fine">
     <p>Made by <b>Maro</b>. Quest, creature, object and item data from <a href="https://github.com/Questie/Questie">Questie and QuestieDB</a>
       (GPL-3.0) and <a href="https://github.com/shagu/pfQuest">pfQuest</a> by Shagu (MIT). Dungeon data from DungeonJournal by
-      Exehn, used with permission. Fonts: Marcellus and Alegreya Sans (SIL Open Font License).</p>
+      Exehn, used with permission. Recipe and trainer data from <a href="https://github.com/cmangos/classic-db">cmangos classic-db</a> (GPL-3.0). Fonts: Marcellus and Alegreya Sans (SIL Open Font License).</p>
     <p>Built with the help of AI (Anthropic&#x27;s Claude).</p>
     <p>Not affiliated with Blizzard Entertainment or the WoW Forever team. World of Warcraft is a trademark of Blizzard
       Entertainment.</p>

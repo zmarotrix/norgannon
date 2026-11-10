@@ -16,7 +16,7 @@
 <link rel="icon" type="image/png" sizes="32x32" href="../img/marks/core-32.png">
 <link rel="apple-touch-icon" href="../img/marks/core-256.png">
 <link rel="preload" href="../fonts/Marcellus-Regular.ttf" as="font" type="font/ttf" crossorigin>
-<link rel="stylesheet" href="../style.css?v=d927ba6d">
+<link rel="stylesheet" href="../style.css?v=107305f1">
 </head>
 <body class="">
 <a class="skip" href="#main">Skip to content</a>
@@ -40,9 +40,11 @@
 <main id="main">
 <div class="wrap doc"><aside class="toc"><div class="docs-nav"><p class="toc-title">Developers</p><a href="index.html">Overview</a><a href="getting-started.html">Getting started</a><a href="forever-rules.html" class="on">What the client allows</a><a href="core-api.html">Core API</a><a href="database-spec.html">Database specification</a></div><div class="on-page"><p class="toc-title">On this page</p><a href="#never">Never</a><a href="#secret-values">Secret values</a><a href="#errors-in-combat-for-add-on-code">Errors in combat (for add-on code)</a><a href="#knowing-when-youre-restricted">Knowing when you&#x27;re restricted</a><a href="#chat-and-add-on-messages">Chat and add-on messages</a><a href="#names">Names</a><a href="#maps-and-position">Maps and position</a><a href="#other-client-facts">Other client facts</a></div></aside><article class="prose"><h1 id="what-the-forever-client-allows">What the Forever client allows</h1>
 <p>WoW Forever runs Classic content on the modern client (interface 16001). That client limits add-ons in ways Classic
-add-on authors don't expect. This page collects what the suite has learned. The evidence is ApiProbe's runs on
+add-on authors don't expect. This page collects what the suite has learned. The evidence is ForeverAPI Probe's runs on
 2026-11-07, recorded in the <a href="https://zmarotrix.github.io/ForeverAPI/">Forever API reference</a> (its Restrictions page, and one page per API system).
 Probe your own calls there before you build on them.</p>
+<p>The helpers named here (<code>Core.IsSecret</code>, <code>Core.Plain</code>, <code>Core:AfterCombat</code>, ...) are LibForever-1.0's too, under the
+same names (<code>LibForever.IsSecret</code>, ...), for add-ons outside the suite. <code>UI.*</code> and <code>Core.Guild</code> are Norgannon Core's own.</p>
 <h2 id="never">Never</h2>
 <div class="table-wrap"><table>
 <thead>
@@ -131,7 +133,7 @@ Mercy's <code>unitframe.lua</code> is the worked example.</p>
 <ul>
 <li>Coordinates come from <code>Core.Player:GetPosition()</code> and Core's copy of HereBeDragons, patched for Forever's Classic map
   hierarchy. Don't call <code>C_Map</code> directly for the player's position.</li>
-<li><code>C_Map.GetBestMapForUnit("player")</code> works in the open world (Maro, 2026-11-07: <code>1413</code>). It returns <code>nil</code>, and so does
+<li><code>C_Map.GetBestMapForUnit("player")</code> works in the open world (checked in game, 2026-11-07: <code>1413</code>). It returns <code>nil</code>, and so does
   <code>UnitPosition</code>, where the <code>Map</code> restriction is active (ApiProbe's run) and in instances. Handle <code>nil</code>.</li>
 </ul>
 <h2 id="other-client-facts">Other client facts</h2>
@@ -180,7 +182,7 @@ Mercy's <code>unitframe.lua</code> is the worked example.</p>
   <div class="foot-fine">
     <p>Made by <b>Maro</b>. Quest, creature, object and item data from <a href="https://github.com/Questie/Questie">Questie and QuestieDB</a>
       (GPL-3.0) and <a href="https://github.com/shagu/pfQuest">pfQuest</a> by Shagu (MIT). Dungeon data from DungeonJournal by
-      Exehn, used with permission. Fonts: Marcellus and Alegreya Sans (SIL Open Font License).</p>
+      Exehn, used with permission. Recipe and trainer data from <a href="https://github.com/cmangos/classic-db">cmangos classic-db</a> (GPL-3.0). Fonts: Marcellus and Alegreya Sans (SIL Open Font License).</p>
     <p>Built with the help of AI (Anthropic&#x27;s Claude).</p>
     <p>Not affiliated with Blizzard Entertainment or the WoW Forever team. World of Warcraft is a trademark of Blizzard
       Entertainment.</p>

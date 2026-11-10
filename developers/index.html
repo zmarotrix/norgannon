@@ -16,7 +16,7 @@
 <link rel="icon" type="image/png" sizes="32x32" href="../img/marks/core-32.png">
 <link rel="apple-touch-icon" href="../img/marks/core-256.png">
 <link rel="preload" href="../fonts/Marcellus-Regular.ttf" as="font" type="font/ttf" crossorigin>
-<link rel="stylesheet" href="../style.css?v=d927ba6d">
+<link rel="stylesheet" href="../style.css?v=107305f1">
 </head>
 <body class="">
 <a class="skip" href="#main">Skip to content</a>
@@ -38,9 +38,13 @@
   </div>
 </header>
 <main id="main">
-<div class="wrap doc"><aside class="toc"><div class="docs-nav"><p class="toc-title">Developers</p><a href="index.html" class="on">Overview</a><a href="getting-started.html">Getting started</a><a href="forever-rules.html">What the client allows</a><a href="core-api.html">Core API</a><a href="database-spec.html">Database specification</a></div><div class="on-page"><p class="toc-title">On this page</p><a href="#libforever-forevers-problems-solved-for-any-add-on">LibForever: Forever&#x27;s problems, solved for any add-on</a><a href="#what-norgannon-core-adds">What Norgannon Core adds</a><a href="#reading-the-game-data">Reading the game data</a><a href="#where-to-start">Where to start</a><a href="#help-improve-the-forever-api-reference">Help improve the Forever API reference</a><a href="#versions">Versions</a><a href="#licences">Licences</a></div></aside><article class="prose"><h1 id="build-add-ons-for-wow-forever">Build add-ons for WoW Forever</h1>
+<div class="wrap doc"><aside class="toc"><div class="docs-nav"><p class="toc-title">Developers</p><a href="index.html" class="on">Overview</a><a href="getting-started.html">Getting started</a><a href="forever-rules.html">What the client allows</a><a href="core-api.html">Core API</a><a href="database-spec.html">Database specification</a></div><div class="on-page"><p class="toc-title">On this page</p><a href="#libforever-forevers-problems-solved-for-any-add-on">LibForever: Forever&#x27;s problems, solved for any add-on</a><a href="#what-norgannon-core-adds">What Norgannon Core adds</a><a href="#reading-the-game-data">Reading the game data</a><a href="#where-to-start">Where to start</a><a href="#help-improve-the-forever-api-reference">Help improve the Forever API reference</a><a href="#talk-to-other-developers">Talk to other developers</a><a href="#versions">Versions</a><a href="#licences">Licences</a></div></aside><article class="prose"><h1 id="build-add-ons-for-wow-forever">Build add-ons for WoW Forever</h1>
 <p>WoW Forever runs classic content on a modern client, with modern restrictions. Norgannon's add-ons solved those
-problems once, and share the answers in two layers. Use the one that fits what you're making.</p>
+problems once, and share the answers in two layers:</p>
+<p class="layers"><span>WoW Forever's client</span><span>LibForever</span><span>Norgannon Core</span><span>Norgannon's add-ons</span></p>
+
+<p><strong>LibForever makes an add-on work on Forever. Norgannon Core makes it a Norgannon add-on.</strong> Building your own add-on?
+You need LibForever. Building one for the Norgannon family? You need Norgannon Core, which includes it.</p>
 <div class="table-wrap"><table>
 <thead>
 <tr>
@@ -84,7 +88,7 @@ problems once, and share the answers in two layers. Use the one that fits what y
 <tbody>
 <tr>
 <td>Classic functions are gone: <code>GetSpellInfo</code>, <code>GetItemInfo</code>, <code>GetContainerItemInfo</code>, <code>UnitAura</code>, the old quest log calls and dozens more.</td>
-<td><strong><code>LF.Compat</code></strong>: about 60 of them, with their classic answers, through the client's new calls. No globals are written, so other add-ons are left alone.</td>
+<td><strong><code>LF.Compat</code></strong>: 60 of them, with their classic answers, through the client's new calls. No globals are written, so other add-ons are left alone.</td>
 </tr>
 <tr>
 <td>Version checks misread the client, so libraries take the wrong path.</td>
@@ -175,11 +179,13 @@ on <a href="https://github.com/zmarotrix/NorgannonDB/issues">NorgannonDB's GitHu
 <h2 id="help-improve-the-forever-api-reference">Help improve the Forever API reference</h2>
 <p>The <a href="https://zmarotrix.github.io/ForeverAPI/">Forever API reference</a> is recorded in the game by <strong>ForeverAPI Probe</strong>, an add-on for add-on developers. It notes how the game's functions behave: what kind of value each one gives back, which turn secret in combat, which calls fail, and the order events arrive in. It records shapes only, never the values themselves and never names.</p>
 <ol>
-<li><a href="https://github.com/zmarotrix/ForeverAPI/releases/latest">Download the probe</a> from ForeverAPI's release, and switch on the parts you care about with <code>/fapi</code>.</li>
+<li><a href="https://github.com/zmarotrix/ForeverAPI/releases/tag/v1.0.0">Download the probe</a> from ForeverAPI's release, and switch on the parts you care about with <code>/fapi</code>.</li>
 <li>Play, or run the code you're working on, as usual.</li>
 <li>Type <code>/fapi export</code>, copy the text, and attach it to an <a href="https://github.com/zmarotrix/ForeverAPI/issues/new?template=api-data.yml">"API data" issue</a> on ForeverAPI's GitHub page.</li>
 </ol>
-<p>Data from other people shows as <strong>reported</strong>, with a count, until Maro's own run confirms it or two different people's data agree. One file never marks anything as confirmed.</p>
+<p>Data from other people shows as <strong>reported</strong>, with a count, until a maintainer's run confirms it or two different people's data agree. One file never marks anything as confirmed.</p>
+<h2 id="talk-to-other-developers">Talk to other developers</h2>
+<p>Our <a href="https://discord.gg/mvnuGyfMxB">Discord</a> has a Developers section. #forever-api is open to everyone: links, releases, and a button for the Developer role. The role opens #build-on-forever, for questions about building on Forever, and #api-findings, one post for each thing you learn about how the client behaves. Bugs go to GitHub.</p>
 <h2 id="versions">Versions</h2>
 <p>LibForever keeps its major version in its name: nothing in <code>LibForever-1.0</code> is removed or changed, and a breaking
 change would be a new <code>LibForever-2.0</code> beside it. If several add-ons ship a copy, the newest one runs.</p>
@@ -233,7 +239,7 @@ problems solved, LibForever does that with no need to ask.</div></article></div>
   <div class="foot-fine">
     <p>Made by <b>Maro</b>. Quest, creature, object and item data from <a href="https://github.com/Questie/Questie">Questie and QuestieDB</a>
       (GPL-3.0) and <a href="https://github.com/shagu/pfQuest">pfQuest</a> by Shagu (MIT). Dungeon data from DungeonJournal by
-      Exehn, used with permission. Fonts: Marcellus and Alegreya Sans (SIL Open Font License).</p>
+      Exehn, used with permission. Recipe and trainer data from <a href="https://github.com/cmangos/classic-db">cmangos classic-db</a> (GPL-3.0). Fonts: Marcellus and Alegreya Sans (SIL Open Font License).</p>
     <p>Built with the help of AI (Anthropic&#x27;s Claude).</p>
     <p>Not affiliated with Blizzard Entertainment or the WoW Forever team. World of Warcraft is a trademark of Blizzard
       Entertainment.</p>

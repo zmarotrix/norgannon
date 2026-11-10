@@ -750,6 +750,16 @@ kbd { display: inline-block; min-width: 1.9em; padding: 2px 9px; border-radius: 
 .dl-name .beta-tag { display: inline-block; font-size: 11px; color: #ffcf7a; }
 code.nowrap { white-space: nowrap; }
 
+/* developers: the layer picture, game -> LibForever -> Core -> add-ons */
+.prose .layers { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 28px; margin: 18px 0; }
+.prose .layers span { position: relative; border: 1px solid var(--line-strong); border-radius: 999px; padding: 6px 14px; font-size: 15px; color: var(--text); background: rgba(255, 255, 255, .03); }
+.prose .layers span + span::before { content: "→"; position: absolute; left: -21px; top: 50%; transform: translateY(-50%); color: var(--muted); }
+.prose .layers span:nth-child(2), .prose .layers span:nth-child(3) { border-color: var(--gold); }
+@media (max-width: 600px) {
+  .prose .layers { flex-direction: column; align-items: flex-start; gap: 22px; }
+  .prose .layers span + span::before { content: "↓"; left: 18px; top: -20px; transform: none; }
+}
+
 /* code highlighting (pygments github-dark) */
 pre { line-height: 125%; }
 td.linenos .normal { color: #6e7681; background-color: #0d1117; padding-left: 5px; padding-right: 5px; }
