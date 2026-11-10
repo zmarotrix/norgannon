@@ -38,60 +38,80 @@
   </div>
 </header>
 <main id="main">
-<div class="wrap doc"><aside class="toc"><div class="docs-nav"><p class="toc-title">Developers</p><a href="index.html" class="on">Overview</a><a href="getting-started.html">Getting started</a><a href="forever-rules.html">What the client allows</a><a href="core-api.html">Core API</a><a href="database-spec.html">Database specification</a></div><div class="on-page"><p class="toc-title">On this page</p><a href="#the-forever-problems-it-solves">The Forever problems it solves</a><a href="#libforever-the-forever-groundwork-shared">LibForever: the Forever groundwork, shared</a><a href="#everything-else-the-core-gives-you">Everything else the Core gives you</a><a href="#reading-the-game-data">Reading the game data</a><a href="#where-to-start">Where to start</a><a href="#help-improve-the-forever-api-reference">Help improve the Forever API reference</a><a href="#versions">Versions</a><a href="#the-licence-today">The licence, today</a></div></aside><article class="prose"><h1 id="build-forever-add-ons-without-solving-the-hard-parts-again">Build Forever add-ons without solving the hard parts again</h1>
-<p>Norgannon Core (version 1.28.2, folder <code>NorgannonDB_Core</code>) is the runtime every Norgannon add-on is built on. It
-solves the parts of writing for WoW Forever that every add-on runs into, so yours can be mostly the thing it's for,
-and look and behave like part of the family from the first build.</p>
-<h2 id="the-forever-problems-it-solves">The Forever problems it solves</h2>
-<p>WoW Forever runs classic content on a modern client, with modern restrictions. These are the walls add-on authors
-hit first, and the Core call for each one.</p>
+<div class="wrap doc"><aside class="toc"><div class="docs-nav"><p class="toc-title">Developers</p><a href="index.html" class="on">Overview</a><a href="getting-started.html">Getting started</a><a href="forever-rules.html">What the client allows</a><a href="core-api.html">Core API</a><a href="database-spec.html">Database specification</a></div><div class="on-page"><p class="toc-title">On this page</p><a href="#libforever-forevers-problems-solved-for-any-add-on">LibForever: Forever&#x27;s problems, solved for any add-on</a><a href="#what-norgannon-core-adds">What Norgannon Core adds</a><a href="#reading-the-game-data">Reading the game data</a><a href="#where-to-start">Where to start</a><a href="#help-improve-the-forever-api-reference">Help improve the Forever API reference</a><a href="#versions">Versions</a><a href="#licences">Licences</a></div></aside><article class="prose"><h1 id="build-add-ons-for-wow-forever">Build add-ons for WoW Forever</h1>
+<p>WoW Forever runs classic content on a modern client, with modern restrictions. Norgannon's add-ons solved those
+problems once, and share the answers in two layers. Use the one that fits what you're making.</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th></th>
+<th><strong>LibForever</strong></th>
+<th><strong>Norgannon Core</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>What it is</td>
+<td>A small library you copy into your add-on</td>
+<td>The add-on every Norgannon add-on runs on (version 1.28.2, folder <code>NorgannonDB_Core</code>)</td>
+</tr>
+<tr>
+<td>What it gives you</td>
+<td>Answers to Forever's problems: missing functions, secret values, combat lockdown, names, add-on messages</td>
+<td>All of LibForever, plus the Norgannon look, settings, the minimap button, the map and the game data</td>
+</tr>
+<tr>
+<td>Who it's for</td>
+<td>Any add-on, whoever wrote it</td>
+<td>Add-ons that join the Norgannon family</td>
+</tr>
+<tr>
+<td>Licence</td>
+<td>MIT: use it anywhere</td>
+<td>All Rights Reserved for now: <a href="#licences">ask first</a></td>
+</tr>
+</tbody>
+</table></div>
+<h2 id="libforever-forevers-problems-solved-for-any-add-on">LibForever: Forever's problems, solved for any add-on</h2>
+<p><strong>LibForever-1.0</strong> is a small library any add-on can embed, whoever wrote it. It's the code Norgannon Core runs on, so every Norgannon add-on tests it on every build. These are the walls add-on authors hit first on Forever, and its answer to each.</p>
 <div class="table-wrap"><table>
 <thead>
 <tr>
 <th>The problem</th>
-<th>What the Core gives you</th>
+<th>What LibForever gives you</th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td>Classic functions are gone: <code>GetSpellInfo</code>, <code>GetItemInfo</code>, <code>GetContainerItemInfo</code>, <code>UnitAura</code>, the old quest log calls and dozens more.</td>
-<td><strong><code>Core.Compat</code></strong>: 60 of them, with their classic answers, through the client's new calls. No globals are written, so other add-ons are left alone.</td>
+<td><strong><code>LF.Compat</code></strong>: about 60 of them, with their classic answers, through the client's new calls. No globals are written, so other add-ons are left alone.</td>
 </tr>
 <tr>
 <td>Version checks misread the client, so libraries take the wrong path.</td>
-<td><strong><code>Core.Client</code></strong>: <code>IsForever()</code>, <code>Flavor()</code> and <code>IsClassicWorld()</code>, from the interface number.</td>
+<td><strong><code>LF.Client</code></strong>: <code>IsForever()</code>, <code>Flavor()</code> and <code>IsClassicWorld()</code>, from the interface number.</td>
 </tr>
 <tr>
 <td>Health is always secret, and about 90 values turn secret in combat, so comparing or doing maths on them throws an error.</td>
-<td><strong><code>Core.Secret</code></strong> and <strong><code>UI.UnitBar</code></strong>: bars, text, colours and fades that let the client handle the secret value, so your code never has to read it.</td>
-</tr>
-<tr>
-<td>Auras can't be read in combat.</td>
-<td><strong><code>UI.UnitAuras</code></strong>: a unit's buffs and debuffs, drawn by the game inside a frame of yours, in combat too.</td>
-</tr>
-<tr>
-<td>Characters have first and last names, so whispers to the name an event gave you can fail.</td>
-<td><strong><code>Core.Names</code></strong>: the full name a whisper reaches, learned from chat, the guild roster and add-on messages.</td>
-</tr>
-<tr>
-<td>Add-on messages are blocked during chat lockdown, and chat lines from add-ons may not reach chat in instances.</td>
-<td><strong><code>Core.Net</code></strong>: messages wait for the lockdown to end, then go. <strong><code>Core:Say</code></strong>: when a line won't post, the chat box opens with it ready to send.</td>
+<td><strong><code>LF.Secret</code></strong>, <strong><code>LF.Plain</code></strong> and <strong><code>LF.Call</code></strong>: read what can be read, and leave the rest to the client without an error.</td>
 </tr>
 <tr>
 <td>Protected calls fail in combat.</td>
-<td><strong><code>Core:AfterCombat</code></strong> queues them, and <strong><code>Core:Restricted</code></strong> tells you which restriction is on and when it changes.</td>
+<td><strong><code>LF:AfterCombat</code></strong> holds them until combat ends, and <strong><code>LF:Restricted</code></strong> tells you which restriction is on and when it changes.</td>
+</tr>
+<tr>
+<td>Characters have first and last names, so whispers to the name an event gave you can fail.</td>
+<td><strong><code>LF.Names</code></strong>: who someone is, and the full name a whisper reaches, learned from chat, the guild roster and add-on messages.</td>
+</tr>
+<tr>
+<td>Add-on messages are blocked during chat lockdown, and chat lines from add-ons may not reach chat in instances.</td>
+<td><strong><code>LF.Net</code></strong>: compressed messages that wait for the lockdown to end, then go. <strong><code>LF:Say</code></strong>: when a line won't post, the chat box opens with it ready to send.</td>
+</tr>
+<tr>
+<td>Saved settings need defaults and upgrades between versions.</td>
+<td><strong><code>LF:SavedVars</code></strong>: defaults filled in, and upgrades run in order.</td>
 </tr>
 </tbody>
 </table></div>
-<h2 id="libforever-the-forever-groundwork-shared">LibForever: the Forever groundwork, shared</h2>
-<p>Everything in the table above that isn't about Norgannon's look lives in <strong>LibForever-1.0</strong>, a small library any add-on can embed. Norgannon Core runs on it, so it's tested by every Norgannon add-on on every build.</p>
-<ul>
-<li><strong>Missing classic functions.</strong> <code>LF.Compat</code> gives <code>GetSpellInfo</code>, <code>GetItemInfo</code> and the rest their classic answers.</li>
-<li><strong>Secret values.</strong> <code>LF.Secret</code> and <code>LF.Plain</code> read what can be read, and leave the rest to the client without an error.</li>
-<li><strong>Combat lockdown.</strong> <code>LF:AfterCombat</code> holds protected changes until combat ends, and <code>LF:Restricted</code> says what's locked now.</li>
-<li><strong>First and last names.</strong> <code>LF.Names</code> knows who someone is, and the full name a whisper reaches.</li>
-<li><strong>Add-on messages.</strong> <code>LF.Net</code> sends compressed messages that wait out chat lockdown, and <code>LF:Say</code> gets a chat line through or opens the chat box with it ready.</li>
-</ul>
 <p>Download <a href="https://github.com/zmarotrix/ForeverAPI/releases/tag/libforever-1.0.1">LibForever 1.0.1</a>, or copy <code>LibForever-1.0</code> from <a href="https://github.com/zmarotrix/ForeverAPI/tree/master/lib">ForeverAPI's lib folder</a>. Put it in your add-on's <code>libs</code> folder with <code>LibStub</code>, <code>CallbackHandler-1.0</code> and <code>AceComm-3.0</code>, which come with it. Load them, then <code>LibForever-1.0.xml</code>. If several add-ons ship a copy, the newest one runs. The <a href="https://github.com/zmarotrix/ForeverAPI/blob/master/lib/README.md">quick start</a> has the full steps.</p>
 <div class="hl"><pre><span></span><code><span class="kd">local</span><span class="w"> </span><span class="nv">LF</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nf">LibStub</span><span class="p">(</span><span class="s2">&quot;LibForever-1.0&quot;</span><span class="p">)</span>
 <span class="nv">LF</span><span class="p">:</span><span class="nf">On</span><span class="p">(</span><span class="s2">&quot;PLAYER_LOGIN&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;MyAddon&quot;</span><span class="p">,</span><span class="w"> </span><span class="kr">function</span><span class="p">()</span>
@@ -100,21 +120,22 @@ hit first, and the Core call for each one.</p>
 <span class="kr">end</span><span class="p">)</span>
 </code></pre></div>
 
-<p>LibForever is under the <a href="https://github.com/zmarotrix/ForeverAPI/blob/master/lib/LICENSE">MIT licence</a>: copy it, change it and ship it in your own add-on, free or not. Its bundled libraries keep their own licences. Bug reports and pull requests are welcome on <a href="https://github.com/zmarotrix/ForeverAPI">ForeverAPI's GitHub page</a>.</p>
+<p>It's under the <a href="https://github.com/zmarotrix/ForeverAPI/blob/master/lib/LICENSE">MIT licence</a>: copy it, change it and ship it in your own add-on, free or not. Its bundled libraries keep their own licences. Bug reports and pull requests are welcome on <a href="https://github.com/zmarotrix/ForeverAPI">ForeverAPI's GitHub page</a>.</p>
 <p>Coming: a port scanner that lists what an old add-on needs to run on Forever, and a test kit to run an add-on outside the game.</p>
-<h2 id="everything-else-the-core-gives-you">Everything else the Core gives you</h2>
+<h2 id="what-norgannon-core-adds">What Norgannon Core adds</h2>
+<p>Norgannon Core runs on LibForever and gives every LibForever call a Core name (<code>Core.Compat</code>, <code>Core.Names</code>,
+<code>Core:AfterCombat</code> and the rest), so the table above works the same in a Norgannon add-on. On top of it:</p>
 <ul>
 <li><strong>One call to start.</strong> <code>Core:NewAddon</code> gives you the version check, saved variables with defaults and migrations,
   a slash command with <code>help</code>, a settings page, and a row in the Norgannon minimap list and the game's add-on menu.</li>
 <li><strong>The family look.</strong> Windows, lists, settings rows, buttons, inputs and colours that match every Norgannon add-on,
   with fonts that cover nine languages.</li>
-<li><strong>A safe way to call the game.</strong> WoW Forever's client hides some values and forbids some calls, more than Classic
-  did. The Core's helpers turn errors and secret values into <code>nil</code> instead of breaking your add-on.</li>
+<li><strong>Bars and auras that work in combat.</strong> <code>UI.UnitBar</code> draws health and power without reading the secret numbers,
+  and <code>UI.UnitAuras</code> shows a unit's buffs and debuffs, drawn by the game inside a frame of yours.</li>
 <li><strong>The map.</strong> Pins on the world map and the minimap, a compass across the top of the screen and a waypoint arrow,
   shared by every add-on, so they never fight over the same pins.</li>
 <li><strong>The game data, if you want it.</strong> Searches by name, quest and loot helpers over <a href="#reading-the-game-data">NorgannonDB</a>.
   The Core runs without NorgannonDB, so add-ons that don't need the data don't pay for it.</li>
-<li><strong>Events and messages.</strong> Game events through one shared frame, and a message bus between add-ons.</li>
 </ul>
 <h2 id="reading-the-game-data">Reading the game data</h2>
 <p>NorgannonDB, the game data, is an ordinary add-on with a written format, the
@@ -132,20 +153,25 @@ software under the GPL-3.0, because it contains data from QuestieDB. If you copy
 data stays under the GPL. Found something wrong or missing? <a href="../improve.html">Players can help fix it</a>, and so can you
 on <a href="https://github.com/zmarotrix/NorgannonDB/issues">NorgannonDB's GitHub page</a>.</p>
 <h2 id="where-to-start">Where to start</h2>
+<p>For any Forever add-on:</p>
 <ol>
-<li><strong><a href="getting-started.html">Getting started</a></strong>: a working add-on in two files, and the rules Norgannon's own add-ons
-   follow.</li>
 <li><strong><a href="forever-rules.html">What the client allows</a></strong>: what WoW Forever's client forbids, which values are secret, and
    how to work with them. Read this before you trust anything you know from retail or Classic.</li>
-<li><strong><a href="core-api.html">Core API</a></strong>: every function the Core promises to keep. Anything not listed there is internal.</li>
-<li><strong><a href="database-spec.html">Database specification</a></strong>: NorgannonDB's tables and fields, if you read the game data.</li>
+<li><strong><a href="https://github.com/zmarotrix/ForeverAPI/blob/master/lib/README.md">LibForever's quick start</a></strong>: embed it and make your first calls.</li>
 <li><strong><a href="https://zmarotrix.github.io/ForeverAPI/">The Forever API reference</a></strong>: the client's own functions, events and widgets, as recorded
    in the game by a probe add-on rather than guessed from other clients. It includes a table of where each classic
    function went, and definitions for VS Code's Lua extension that flag calls that go secret in combat, are forbidden
    or are protected.</li>
+<li><strong><a href="database-spec.html">Database specification</a></strong>: NorgannonDB's tables and fields, if you read the game data.</li>
 </ol>
-<p><a href="NorgannonTemplate.zip">NorgannonTemplate</a> is a small, complete add-on to copy from. Norgannon's tests load it on every
-build, so it always works with the current Core.</p>
+<p>For a Norgannon add-on:</p>
+<ol>
+<li><strong><a href="getting-started.html">Getting started</a></strong>: a working add-on in two files, and the rules Norgannon's own add-ons
+   follow.</li>
+<li><strong><a href="core-api.html">Core API</a></strong>: every function the Core promises to keep. Anything not listed there is internal.</li>
+<li><strong><a href="NorgannonTemplate.zip">NorgannonTemplate</a></strong>: a small, complete add-on to copy from. Norgannon's tests load it on
+   every build, so it always works with the current Core.</li>
+</ol>
 <h2 id="help-improve-the-forever-api-reference">Help improve the Forever API reference</h2>
 <p>The <a href="https://zmarotrix.github.io/ForeverAPI/">Forever API reference</a> is recorded in the game by <strong>ForeverAPI Probe</strong>, an add-on for add-on developers. It notes how the game's functions behave: what kind of value each one gives back, which turn secret in combat, which calls fail, and the order events arrive in. It records shapes only, never the values themselves and never names.</p>
 <ol>
@@ -155,13 +181,19 @@ build, so it always works with the current Core.</p>
 </ol>
 <p>Data from other people shows as <strong>reported</strong>, with a count, until Maro's own run confirms it or two different people's data agree. One file never marks anything as confirmed.</p>
 <h2 id="versions">Versions</h2>
-<p>An add-on asks for the Core version it was written for: <code>api = { 1, 20 }</code> means "written for Core 1.20". It runs on
+<p>LibForever keeps its major version in its name: nothing in <code>LibForever-1.0</code> is removed or changed, and a breaking
+change would be a new <code>LibForever-2.0</code> beside it. If several add-ons ship a copy, the newest one runs.</p>
+<p>A Norgannon add-on asks for the Core version it was written for: <code>api = { 1, 20 }</code> means "written for Core 1.20". It runs on
 any later 1.x, because a minor version only ever adds. A new major version may change things, and the Core says so
 in chat rather than failing quietly.</p>
-<h2 id="the-licence-today">The licence, today</h2>
-<div class="note"><b>Read before you ship.</b> NorgannonDB, the game data, is free software under the GPL-3.0. The
-Core's code is currently <b>All Rights Reserved</b>. The plan is to release it under an open licence before it's
-published for general use. Until then, ask before you release an add-on that depends on it.</div></article></div>
+<h2 id="licences">Licences</h2>
+<ul>
+<li><strong>LibForever</strong> is under the <a href="https://github.com/zmarotrix/ForeverAPI/blob/master/lib/LICENSE">MIT licence</a>. Copy it, change it and ship it in any add-on.</li>
+<li><strong>NorgannonDB</strong>, the game data, is free software under the GPL-3.0.</li>
+</ul>
+<div class="note"><b>Read before you ship.</b> Norgannon Core's own code (the look, the settings, the map) is
+<b>All Rights Reserved</b> for now. Ask before you release an add-on that depends on it. If you only need Forever's
+problems solved, LibForever does that with no need to ask.</div></article></div>
 </main>
 <footer class="foot">
   <div class="foot-inner">
